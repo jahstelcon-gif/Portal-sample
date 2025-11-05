@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Google Sign-In & Register (Firebase)</title>
+  <title>Google Sign-In & Register (Firebase & EmailJS)</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2.6.4/dist/email.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
     button { padding: 10px 24px; font-size: 1rem; }
@@ -35,12 +36,30 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
+    // ---- EmailJS config ----
+    // Sign up at https://www.emailjs.com/ to get your USER_ID, SERVICE_ID, and TEMPLATE_ID.
+    // Replace with your own keys/template
+    emailjs.init('I8tvyDhY29nbwRvAE');
+
+    function sendCongratsEmail(toEmail, toName) {
+      // Customize the variables to fit your emailjs template
+      emailjs.send('service_f4zsz1r', 'template_ogac97k', {
+        to_email: toEmail,
+        to_name: toName
+      })
+      .then(function(response) {
+        // Optionally notify in UI or console
+        console.log('Congrats email sent!', response.status, response.text);
+      }, function(error) {
+        console.error('Congrats email failed:', error);
+      });
+    }
+
     // --- Elements
     const btn = document.getElementById('googleSignInBtn');
     const userInfo = document.getElementById('user-info');
     const msg = document.getElementById('msg');
 
-    /** Utility: Get next account number in ACC-xxx format **/
     function getNextAccountNumber(callback) {
       db.ref('accounts').once('value', snap => {
         let max = 0;
@@ -55,14 +74,12 @@
       });
     }
 
-    /** Utility: Check if account already exists by email **/
     function accountExistsByEmail(email, callback) {
       db.ref('accounts').orderByChild("email").equalTo(email).once('value', snap => {
         callback(snap.exists() ? snap : null);
       });
     }
 
-    // --- Google sign-in logic
     btn.onclick = () => {
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider)
@@ -70,22 +87,21 @@
           const user = result.user;
           if (!user) return;
           userInfo.innerHTML = `<div>Signed in as:<br><b>${user.displayName}</b><br>${user.email}</div>`;
-          // Check if already exists
           accountExistsByEmail(user.email, existingSnap => {
             if(existingSnap) {
               msg.innerHTML = `<span class="success">Account already registered. Welcome back!</span>`;
             } else {
-              // New account: get next acc number, store
               getNextAccountNumber(accNum => {
-                // Save to /accounts
                 db.ref('accounts').push({
                   accountNumber: accNum,
                   email: user.email,
                   name: user.displayName,
-                  password: "", // No password for Google users
+                  password: "",
                   role: "employee"
                 }).then(() => {
                   msg.innerHTML = `<span class="success">Account registered as ${accNum}!</span>`;
+                  // Send congratulation email
+                  sendCongratsEmail(user.email, user.displayName || user.email);
                 }).catch(e => {
                   msg.innerHTML = `<span class="error">Failed to store account: ${e.message}</span>`;
                 });
