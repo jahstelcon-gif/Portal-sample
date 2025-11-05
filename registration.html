@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Google Sign-In & Register (Firebase)</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
+    button { padding: 10px 24px; font-size: 1rem; }
+    #user-info { margin-top: 18px; }
+    .success { color: #227822; }
+    .error { color: #c00; }
+  </style>
+</head>
+<body>
+  <h2>Sign in/Register with Google</h2>
+  <button id="googleSignInBtn">Sign in with Google</button>
+  <div id="user-info"></div>
+  <div id="msg"></div>
+  <script>
+    // ---- Firebase config ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyB1Gbmp2j2cTfnUmuWTjcL2ypauUpQn8Qc",
+      authDomain: "jahsportal.firebaseapp.com",
+      databaseURL: "https://jahsportal-default-rtdb.firebaseio.com",
+      projectId: "jahsportal",
+      storageBucket: "jahsportal.firebasestorage.app",
+      messagingSenderId: "798312139932",
+      appId: "1:798312139932:web:2f6654cdd82a23406ff159"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // --- Elements
+    const btn = document.getElementById('googleSignInBtn');
+    const userInfo = document.getElementById('user-info');
+    const msg = document.getElementById('msg');
+
+    /** Utility: Get next account number in ACC-xxx format **/
+    function getNextAccountNumber(callback) {
+      db.ref('accounts').once('value', snap => {
+        let max = 0;
+        snap.forEach(child => {
+          const accNo = child.val().accountNumber;
+          if (accNo && accNo.startsWith('ACC-')) {
+            const num = parseInt(accNo.replace('ACC-', ''));
+            if(num > max) max = num;
+          }
+        });
+        callback('ACC-' + String(max+1).padStart(3, '0'));
+      });
+    }
+
+    /** Utility: Check if account already exists by email **/
+    function accountExistsByEmail(email, callback) {
+      db.ref('accounts').orderByChild("email").equalTo(email).once('value', snap => {
+        callback(snap.exists() ? snap : null);
+      });
+    }
+
+    // --- Google sign-in logic
+    btn.onclick = () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then(result => {
+          const user = result.user;
+          if (!user) return;
+          userInfo.innerHTML = `<div>Signed in as:<br><b>${user.displayName}</b><br>${user.email}</div>`;
+          // Check if already exists
+          accountExistsByEmail(user.email, existingSnap => {
+            if(existingSnap) {
+              msg.innerHTML = `<span class="success">Account already registered. Welcome back!</span>`;
+            } else {
+              // New account: get next acc number, store
+              getNextAccountNumber(accNum => {
+                // Save to /accounts
+                db.ref('accounts').push({
+                  accountNumber: accNum,
+                  email: user.email,
+                  name: user.displayName,
+                  password: "", // No password for Google users
+                  role: "employee"
+                }).then(() => {
+                  msg.innerHTML = `<span class="success">Account registered as ${accNum}!</span>`;
+                }).catch(e => {
+                  msg.innerHTML = `<span class="error">Failed to store account: ${e.message}</span>`;
+                });
+              });
+            }
+          });
+        })
+        .catch(e => {
+          msg.innerHTML = `<span class="error">Sign in failed: ${e.message}</span>`;
+        });
+    };
+  </script>
+</body>
+</html>
