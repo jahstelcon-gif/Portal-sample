@@ -4,10 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Google Sign-In & Register (Firebase & EmailJS)</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2.6.4/dist/email.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; }
     button { padding: 10px 24px; font-size: 1rem; }
@@ -15,14 +11,22 @@
     .success { color: #227822; }
     .error { color: #c00; }
   </style>
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <!-- Latest EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
+
   <h2>Sign in/Register with Google</h2>
   <button id="googleSignInBtn">Sign in with Google</button>
   <div id="user-info"></div>
   <div id="msg"></div>
+
   <script>
-    // ---- Firebase config ----
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyB1Gbmp2j2cTfnUmuWTjcL2ypauUpQn8Qc",
       authDomain: "jahsportal.firebaseapp.com",
@@ -36,30 +40,26 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // ---- EmailJS config ----
-    // Sign up at https://www.emailjs.com/ to get your USER_ID, SERVICE_ID, and TEMPLATE_ID.
-    // Replace with your own keys/template
-    emailjs.init('I8tvyDhY29nbwRvAE');
+    // EmailJS init
+    emailjs.init('I8tvyDhY29nbwRvAE'); // Replace with your public key
 
     function sendCongratsEmail(toEmail, toName) {
-      // Customize the variables to fit your emailjs template
-      emailjs.send('service_f4zsz1r', 'template_ogac97k', {
+      emailjs.send('service_f4zsz1r', 'template_b7ndths', {
         to_email: toEmail,
         to_name: toName
-      })
-      .then(function(response) {
-        // Optionally notify in UI or console
+      }).then(function(response) {
         console.log('Congrats email sent!', response.status, response.text);
       }, function(error) {
         console.error('Congrats email failed:', error);
       });
     }
 
-    // --- Elements
+    // Elements
     const btn = document.getElementById('googleSignInBtn');
     const userInfo = document.getElementById('user-info');
     const msg = document.getElementById('msg');
 
+    // Utilities
     function getNextAccountNumber(callback) {
       db.ref('accounts').once('value', snap => {
         let max = 0;
@@ -73,13 +73,14 @@
         callback('ACC-' + String(max+1).padStart(3, '0'));
       });
     }
-
+    
     function accountExistsByEmail(email, callback) {
       db.ref('accounts').orderByChild("email").equalTo(email).once('value', snap => {
         callback(snap.exists() ? snap : null);
       });
     }
 
+    // Google Sign In
     btn.onclick = () => {
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider)
@@ -100,7 +101,6 @@
                   role: "employee"
                 }).then(() => {
                   msg.innerHTML = `<span class="success">Account registered as ${accNum}!</span>`;
-                  // Send congratulation email
                   sendCongratsEmail(user.email, user.displayName || user.email);
                 }).catch(e => {
                   msg.innerHTML = `<span class="error">Failed to store account: ${e.message}</span>`;
@@ -114,7 +114,6 @@
         });
     };
   </script>
+
 </body>
 </html>
-
-
