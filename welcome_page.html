@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JAHS Telecon Portal</title>
-
+  
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link rel="stylesheet" href="welcome_page.css">
-
-  <style>
-    /* You can keep your existing CSS here */
-  </style>
+ <link rel="stylesheet" href="welcome_page.css">
+    
 </head>
 <body>
 
@@ -22,39 +19,40 @@
   <!-- Slider -->
   <div class="slider-container">
     <div class="slides">
-      <img src="bg1.png" alt="Slide 1" />
-      <img src="bg2.png" alt="Slide 2" />
-      <img src="bg3.png" alt="Slide 3" />
-      <img src="bg4.png" alt="Slide 4" />
+      <img src="bg1.png" alt="Slide 1">
+      <img src="bg2.png" alt="Slide 2">
+      <img src="bg3.png" alt="Slide 3">
+      <img src="bg4.png" alt="Slide 4">
     </div>
     <div class="right-card">
-      <img src="logowebb.png" style="height: 130px;" />
+      <img src="logowebb.png" style="height: 130px; ">
       <h1>Login</h1>
       <form id="universalLoginForm">
         <div class="input-group">
-          <input type="email" id="login_email" placeholder=" " required />
+          <input type="email" id="login_email" placeholder=" " required>
           <label for="login_email">Email</label>
         </div>
         <div class="input-group">
-          <input type="password" id="login_password" placeholder=" " required />
+          <input type="password" id="login_password" placeholder=" " required>
           <label for="login_password">Password</label>
           <span class="toggle-password" onclick="togglePassword()" style="color: white;">👁</span>
         </div>
         <button type="submit">Sign In</button>
       </form>
-      <img src="qrcode.png" style="height: 330px;" />
+      <img src="qrcode.png  " style="height: 330px; ">
     </div>
     <button class="center-button" id="join">Join our Team!</button>
   </div>
 
   <!-- Footer -->
 
+
   <!-- Join Popup -->
   <div class="popup_overlay" id="pop_join">
     <div class="popup_box">
       <span class="close" id="closeJoin">&times;</span>
       <div class="popup_left">
-        <iframe
+        <iframe 
           src="https://www.google.com/maps?q=14.8070035,120.8683621&hl=es;z=14&output=embed"
           allowfullscreen>
         </iframe>
@@ -63,9 +61,9 @@
         <h2>Join Our Team</h2>
         <form id="joinForm">
           <label for="join_email">Email:</label>
-          <input type="email" id="join_email" required />
+          <input type="email" id="join_email" required>
           <label for="join_email">Contact Number:</label>
-          <input type="contact_num" id="contact_num" required />
+           <input type="contact_num" id="contact_num" required>
           <label for="join_message">Message Us:</label>
           <textarea id="join_message" rows="4" required></textarea>
           <button type="submit">Submit</button>
@@ -80,11 +78,11 @@
       <span class="close" style="color: white;">&times;</span>
       <h2>Login</h2>
       <form id="universalLoginForm">
-        <input type="email" id="login_email_popup" placeholder="Email" required /><br /><br />
+        <input type="email" id="login_email_popup" placeholder="Email" required><br><br>
         <div style="position:relative;">
-          <input type="password" id="login_password_popup" placeholder="Password" required />
+          <input type="password" id="login_password_popup" placeholder="Password" required>
           <span class="toggle-password" onclick="togglePasswordPopup()">👁</span>
-        </div><br />
+        </div><br>
         <button type="submit">Sign In</button>
       </form>
     </div>
@@ -92,20 +90,19 @@
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <!-- JS for Slider -->
   <script>
-    const slides = document.querySelector(".slides");
-    const slideCount = document.querySelectorAll(".slides img").length;
+    const slides = document.querySelector('.slides');
+    const slideCount = document.querySelectorAll('.slides img').length;
     let index = 0;
 
     function showNextSlide(interval) {
       setTimeout(function changeSlide() {
         index = (index + 1) % slideCount;
         slides.style.transform = `translateX(${-index * 100}%)`;
-        const nextInterval = index === 0 ? 6000 : 4000;
+        const nextInterval = (index === 0) ? 6000 : 4000;
         showNextSlide(nextInterval);
       }, interval);
     }
@@ -121,72 +118,7 @@
     }
   </script>
 
-  <!-- Firebase Google Sign-In Integration -->
-  <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyB1Gbmp2j2cTfnUmuWTjcL2ypauUpQn8Qc",
-      authDomain: "jahsportal.firebaseapp.com",
-      databaseURL: "https://jahsportal-default-rtdb.firebaseio.com",
-      projectId: "jahsportal",
-      storageBucket: "jahsportal.firebasestorage.app",
-      messagingSenderId: "798312139932",
-      appId: "1:798312139932:web:2f6654cdd82a23406ff159"
-    };
-
-    // Initialize Firebase app & auth
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const auth = firebase.auth();
-
-    const loginBtn = document.getElementById("login");
-    const messageEl = document.createElement("p");
-    loginBtn.parentNode.insertBefore(messageEl, loginBtn.nextSibling);
-
-    // Login button toggle Google sign-in & sign-out
-    loginBtn.addEventListener("click", () => {
-      if (loginBtn.textContent === "Login") {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider)
-          .then((result) => {
-            const user = result.user;
-            messageEl.style.color = "green";
-            messageEl.textContent = `Welcome, ${user.displayName}`;
-            loginBtn.textContent = "Sign Out";
-          })
-          .catch((error) => {
-            messageEl.style.color = "red";
-            messageEl.textContent = "Login failed: " + error.message;
-          });
-      } else {
-        auth.signOut()
-          .then(() => {
-            loginBtn.textContent = "Login";
-            messageEl.style.color = "black";
-            messageEl.textContent = "Signed out successfully.";
-          })
-          .catch((error) => {
-            messageEl.style.color = "red";
-            messageEl.textContent = "Sign out failed: " + error.message;
-          });
-      }
-    });
-
-    // Auth state listener to persist sign-in state
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        loginBtn.textContent = "Sign Out";
-        messageEl.style.color = "green";
-        messageEl.textContent = `Welcome back, ${user.displayName}`;
-      } else {
-        loginBtn.textContent = "Login";
-        messageEl.textContent = "";
-      }
-    });
-  </script>
-
-  <!-- Your other custom JS (login.js) can go here -->
+  <!-- Custom JS for Login & Join -->
   <script src="login.js"></script>
 </body>
 </html>
