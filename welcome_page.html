@@ -9,14 +9,15 @@
   <link rel="stylesheet" href="welcome_page.css">
 
   <style>
-    /* You can keep your existing CSS here */
+    /* Your existing CSS */
   </style>
 </head>
 <body>
 
   <!-- Navigation -->
   <nav>
-    <button id="login">Login</button>
+    <button id="loginToggle">Login / Sign Out</button>
+    <button id="googleSignInBtn">Sign in/up with Google</button>
   </nav>
 
   <!-- Slider -->
@@ -140,29 +141,17 @@
     }
     const auth = firebase.auth();
 
-    const loginBtn = document.getElementById("login");
+    const loginToggleBtn = document.getElementById("loginToggle");
+    const googleSignInBtn = document.getElementById("googleSignInBtn");
     const messageEl = document.createElement("p");
-    loginBtn.parentNode.insertBefore(messageEl, loginBtn.nextSibling);
+    loginToggleBtn.parentNode.insertBefore(messageEl, loginToggleBtn.nextSibling);
 
-    // Login button toggle Google sign-in & sign-out
-    loginBtn.addEventListener("click", () => {
-      if (loginBtn.textContent === "Login") {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider)
-          .then((result) => {
-            const user = result.user;
-            messageEl.style.color = "green";
-            messageEl.textContent = `Welcome, ${user.displayName}`;
-            loginBtn.textContent = "Sign Out";
-          })
-          .catch((error) => {
-            messageEl.style.color = "red";
-            messageEl.textContent = "Login failed: " + error.message;
-          });
-      } else {
+    // Login/Sign out toggle button
+    loginToggleBtn.addEventListener("click", () => {
+      if (loginToggleBtn.textContent === "Login / Sign Out") {
         auth.signOut()
           .then(() => {
-            loginBtn.textContent = "Login";
+            loginToggleBtn.textContent = "Login / Sign Out";
             messageEl.style.color = "black";
             messageEl.textContent = "Signed out successfully.";
           })
@@ -170,17 +159,33 @@
             messageEl.style.color = "red";
             messageEl.textContent = "Sign out failed: " + error.message;
           });
-      }
+      } 
     });
 
-    // Auth state listener to persist sign-in state
+    // Google explicit Sign in/up button
+    googleSignInBtn.addEventListener("click", () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          messageEl.style.color = "green";
+          messageEl.textContent = `Welcome, ${user.displayName}`;
+          loginToggleBtn.textContent = "Sign Out";
+        })
+        .catch((error) => {
+          messageEl.style.color = "red";
+          messageEl.textContent = "Login failed: " + error.message;
+        });
+    });
+
+    // Auth state listener to keep UI in sync
     auth.onAuthStateChanged((user) => {
       if (user) {
-        loginBtn.textContent = "Sign Out";
+        loginToggleBtn.textContent = "Sign Out";
         messageEl.style.color = "green";
         messageEl.textContent = `Welcome back, ${user.displayName}`;
       } else {
-        loginBtn.textContent = "Login";
+        loginToggleBtn.textContent = "Login / Sign Out";
         messageEl.textContent = "";
       }
     });
