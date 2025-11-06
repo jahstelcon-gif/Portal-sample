@@ -1,102 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JAHS Telecon Portal</title>
 
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <!-- External CSS -->
-  <link rel="stylesheet" href="welcome_page.css">
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <link rel="stylesheet" href="welcome_page.css" />
 </head>
 <body>
-
   <!-- Navigation -->
   <nav>
     <button id="login">Login</button>
   </nav>
 
-  <!-- Slider -->
+  <!-- Slider Section -->
   <div class="slider-container">
     <div class="slides">
-      <img src="bg1.png" alt="Slide 1">
-      <img src="bg2.png" alt="Slide 2">
-      <img src="bg3.png" alt="Slide 3">
-      <img src="bg4.png" alt="Slide 4">
+      <img src="bg1.png" alt="Slide 1" />
+      <img src="bg2.png" alt="Slide 2" />
+      <img src="bg3.png" alt="Slide 3" />
+      <img src="bg4.png" alt="Slide 4" />
     </div>
+
     <div class="right-card">
-      <img src="logowebb.png" style="height: 130px;">
-      <h1>Welcome to JAHS Telecon Portal</h1>
-      <p>Log in or join our team to get started.</p>
-      <button class="center-button" id="join">Join our Team!</button>
+      <img src="logowebb.png" style="height: 130px" />
+      <h1>Login</h1>
+      <form id="loginForm">
+        <div class="input-group">
+          <input type="email" id="login_email" placeholder=" " required />
+          <label for="login_email">Email</label>
+        </div>
+        <div class="input-group">
+          <input type="password" id="login_password" placeholder=" " required />
+          <label for="login_password">Password</label>
+          <span class="toggle-password" onclick="togglePassword()">👁</span>
+        </div>
+        <button type="submit">Sign In</button>
+      </form>
+      <img src="qrcode.png" style="height: 330px" />
     </div>
-  </div>
 
-  <!-- Join Popup -->
-  <div class="popup_overlay" id="pop_join">
-    <div class="popup_box">
-      <span class="close" id="closeJoin">&times;</span>
-      <div class="popup_left">
-        <iframe 
-          src="https://www.google.com/maps?q=14.8070035,120.8683621&hl=es;z=14&output=embed"
-          allowfullscreen>
-        </iframe>
-      </div>
-      <div class="popup_right">
-        <h2>Join Our Team</h2>
-        <form id="joinForm">
-          <label for="join_email">Email:</label>
-          <input type="email" id="join_email" required>
-
-          <label for="contact_num">Contact Number:</label>
-          <input 
-            type="text" 
-            id="contact_num" 
-            maxlength="11" 
-            pattern="\d{11}" 
-            title="Please enter up to 11 digits only"
-            required
-          >
-
-          <label for="join_message">Message Us:</label>
-          <textarea 
-            id="join_message" 
-            rows="4" 
-            maxlength="200" 
-            placeholder="Type your message (max 200 characters)" 
-            required
-          ></textarea>
-
-          <button type="submit">Submit</button>
-        </form>
-      </div>
-    </div>
+    <button class="center-button" onclick="window.location.href='join.html'">
+      Join our Team!
+    </button>
   </div>
 
   <!-- Login Popup -->
   <div id="pop_login" class="popup_overlay">
     <div class="login_box">
-      <span class="close" style="color: white;">&times;</span>
+      <span class="close" style="color: white">&times;</span>
       <h2>Login</h2>
-      <form id="universalLoginFormPopup">
-        <input type="email" id="login_email_popup" placeholder="Email" required><br><br>
-        <div style="position:relative;">
-          <input type="password" id="login_password_popup" placeholder="Password" required>
+      <form id="popupLoginForm">
+        <input type="email" id="popup_login_email" placeholder="Email" required /><br /><br />
+        <div style="position: relative">
+          <input type="password" id="popup_login_password" placeholder="Password" required />
           <span class="toggle-password" onclick="togglePasswordPopup()">👁</span>
-        </div><br>
+        </div><br />
         <button type="submit">Sign In</button>
       </form>
     </div>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    // =======================
+    // SLIDER FUNCTION
+    // =======================
+    const slides = document.querySelector('.slides');
+    const slideCount = document.querySelectorAll('.slides img').length;
+    let index = 0;
 
-  <!-- Fixed and Debugged JS -->
-  <script src="login.js"></script>
+    function showNextSlide(interval) {
+      setTimeout(function changeSlide() {
+        index = (index + 1) % slideCount;
+        slides.style.transform = `translateX(${-index * 100}%)`;
+        const nextInterval = (index === 0) ? 6000 : 4000;
+        showNextSlide(nextInterval);
+      }, interval);
+    }
+    showNextSlide(6000);
+
+    function togglePassword() {
+      const pass = document.getElementById('login_password');
+      pass.type = pass.type === 'password' ? 'text' : 'password';
+    }
+
+    function togglePasswordPopup() {
+      const pass = document.getElementById('popup_login_password');
+      pass.type = pass.type === 'password' ? 'text' : 'password';
+    }
+
+    // =======================
+    // FIREBASE CONFIG
+    // =======================
+    const firebaseConfig = {
+      apiKey: "AIzaSyB1Gbmp2j2cTfnUmuWTjcL2ypauUpQn8Qc",
+      authDomain: "jahsportal.firebaseapp.com",
+      databaseURL: "https://jahsportal-default-rtdb.firebaseio.com",
+      projectId: "jahsportal",
+      storageBucket: "jahsportal.firebasestorage.app",
+      messagingSenderId: "798312139932",
+      appId: "1:798312139932:web:2f6654cdd82a23406ff159",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // =======================
+    // LOGIN FUNCTION
+    // =======================
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("login_email").value.trim();
+      const password = document.getElementById("login_password").value.trim();
+
+      if (!email || !password) {
+        Swal.fire("Missing Info", "Please enter both email and password.", "warning");
+        return;
+      }
+
+      Swal.fire({ title: "Verifying...", didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+
+      try {
+        const snap = await db.ref("accounts").orderByChild("email").equalTo(email).once("value");
+
+        if (!snap.exists()) {
+          Swal.fire("Login Failed", "Invalid email or password.", "error");
+          return;
+        }
+
+        let acc = null;
+        snap.forEach(child => acc = child.val());
+
+        if (!acc || acc.password !== password) {
+          Swal.fire("Login Failed", "Invalid email or password.", "error");
+          return;
+        }
+
+        localStorage.setItem("email", acc.email);
+        localStorage.setItem("role", acc.role);
+        localStorage.setItem("userName", acc.name);
+
+        Swal.fire({
+          icon: "success",
+          title: `Welcome, ${acc.name}!`,
+          text: "Redirecting...",
+          timer: 2500,
+          showConfirmButton: false
+        }).then(() => {
+          if (acc.role === "admin") window.location.href = "admin_dashboard.html";
+          else if (acc.role === "teamleader") window.location.href = "team_dashboard.html";
+          else if (acc.role === "employee") window.location.href = "employee_dashboard.html";
+        });
+      } catch (err) {
+        console.error(err);
+        Swal.fire("Error", "Database connection failed.", "error");
+      }
+    });
+  </script>
 </body>
 </html>
-
