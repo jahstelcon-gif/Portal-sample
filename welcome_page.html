@@ -63,16 +63,11 @@
       <div class="popup_right">
         <h2>Join Our Team</h2>
         <form id="joinForm">
-          <!-- Replaced email input with Google Sign-In -->
-          <label>Email:</label>
-          <input type="email" id="join_email" placeholder="Sign in with Google" readonly required style="cursor:pointer; background-color:#f8f8f8;">
-          <button type="button" id="googleJoinBtn" class="google-btn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo" style="height:18px; vertical-align:middle; margin-right:8px;">
-            Sign in with Google
-          </button>
+          <label for="join_email">Email:</label>
+          <input type="email" id="join_email" required>
 
           <label for="join_message">Message Us:</label>
-          <textarea id="join_message" rows="4" required maxlength="200" placeholder="Write your message (max 200 characters)"></textarea>
+          <textarea id="join_message" rows="4" required></textarea>
           <button type="submit">Submit</button>
         </form>
       </div>
@@ -97,7 +92,6 @@
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <!-- JS for Slider -->
@@ -126,7 +120,7 @@
     }
   </script>
 
-  <!-- Main JS -->
+  <!-- Custom JS for Login & Join -->
   <script src="login.js"></script>
 </body>
 </html>
