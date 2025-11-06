@@ -11,9 +11,7 @@ const firebaseConfig = {
   appId: "1:798312139932:web:2f6654cdd82a23406ff159",
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 // =======================
@@ -142,7 +140,7 @@ window.addEventListener("click", (e) => {
 })();
 
 // =======================
-// JOIN OUR TEAM FORM (with validation + SweetAlert loader)
+// JOIN OUR TEAM FORM
 // =======================
 document.getElementById("joinForm").addEventListener("submit", async function (e) {
   e.preventDefault();
@@ -150,7 +148,6 @@ document.getElementById("joinForm").addEventListener("submit", async function (e
   const joinEmail = document.getElementById("join_email").value.trim();
   const joinMessage = document.getElementById("join_message").value.trim();
 
-  // ✅ 1. Minimum 200 words
   const wordCount = joinMessage.split(/\s+/).filter(Boolean).length;
   if (wordCount < 200) {
     Swal.fire({
@@ -161,7 +158,6 @@ document.getElementById("joinForm").addEventListener("submit", async function (e
     return;
   }
 
-  // ✅ 2. Validate email format
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailPattern.test(joinEmail)) {
     Swal.fire({
@@ -173,7 +169,6 @@ document.getElementById("joinForm").addEventListener("submit", async function (e
   }
 
   try {
-    // ✅ Show loading alert
     Swal.fire({
       title: "Submitting your request...",
       text: "Please wait a moment.",
@@ -181,20 +176,17 @@ document.getElementById("joinForm").addEventListener("submit", async function (e
       allowOutsideClick: false,
     });
 
-    // ✅ 3. Save request in Firebase
     await db.ref("join_requests").push({
       email: joinEmail,
       message: joinMessage,
       timestamp: new Date().toISOString(),
     });
 
-    // ✅ 4. Send confirmation email via EmailJS
     await emailjs.send("service_f4zsz1r", "template_re3enfm", {
       to_name: joinEmail,
       to_email: joinEmail,
     });
 
-    // ✅ 5. Success message
     Swal.fire({
       icon: "success",
       title: "Request Sent!",
