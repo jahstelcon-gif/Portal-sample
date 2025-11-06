@@ -13,6 +13,8 @@ const firebaseConfig = {
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const auth = firebase.auth();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
 
 // =======================
 // LOGIN POPUP CONTROLS
@@ -70,9 +72,7 @@ loginForm.addEventListener("submit", async (e) => {
     }
 
     let acc = null;
-    snap.forEach((child) => {
-      acc = child.val();
-    });
+    snap.forEach((child) => (acc = child.val()));
 
     if (!acc || acc.password !== password) {
       Swal.fire({
@@ -91,23 +91,12 @@ loginForm.addEventListener("submit", async (e) => {
       title: `Welcome, ${acc.name}!`,
       text: "You have successfully logged in.",
       icon: "success",
-      confirmButtonText: "Continue",
       timer: 2500,
       timerProgressBar: true,
     }).then(() => {
-      if (acc.role === "admin") {
-        window.location.href = "admin_dashboard.html";
-      } else if (acc.role === "teamleader") {
-        window.location.href = "team_dashboard.html";
-      } else if (acc.role === "employee") {
-        window.location.href = "employee_dashboard.html";
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Unknown role.",
-        });
-      }
+      if (acc.role === "admin") window.location.href = "admin_dashboard.html";
+      else if (acc.role === "teamleader") window.location.href = "team_dashboard.html";
+      else if (acc.role === "employee") window.location.href = "employee_dashboard.html";
     });
   } catch (err) {
     console.error(err);
@@ -140,71 +129,94 @@ window.addEventListener("click", (e) => {
 })();
 
 // =======================
-// ✅ Google Sign-In (Join Form)
+// ✅ GOOGLE SIGN-IN FOR JOIN FORM
 // =======================
 const googleJoinBtn = document.getElementById("googleJoinBtn");
-const provider = new firebase.auth.GoogleAuthProvider();
+if (googleJoinBtn) {
+  googleJoinBtn.addEventListener("click", async () => {
+    try {
+      const result = await auth.signInWithPopup(googleProvider);
+      const user = result.user;
+      document.getElementById("join_email").value = user.email;
 
-googleJoinBtn.addEventListener("click", async () => {
-  try {
-    const result = await firebase.auth().signInWithPopup(provider);
-    const user = result.user;
-
-    if (!user || !user.email.endsWith("@gmail.com")) {
+      Swal.fire({
+        icon: "success",
+        title: "Google Account Linked",
+        text: `Signed in as ${user.email}`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      console.error("Google Sign-in Error:", error);
       Swal.fire({
         icon: "error",
-        title: "Gmail Required",
-        text: "Please use a valid Gmail account.",
+        title: "Sign-in Failed",
+        text: error.message,
       });
-      return;
     }
+  });
+}
 
-    // Ask for message input after sign-in
-    const { value: joinMessage } = await Swal.fire({
-      title: "Join Our Team",
-      input: "textarea",
-      inputLabel: "Enter your message (max 200 characters)",
-      inputPlaceholder: "Type your message here...",
-      inputAttributes: { maxlength: 200 },
-      inputValidator: (value) =>
-        !value ? "Message cannot be empty!" : undefined,
-      showCancelButton: true,
-      confirmButtonText: "Submit",
+// =======================
+// JOIN OUR TEAM FORM
+// =======================
+document.getElementById("joinForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const joinEmail = document.getElementById("join_email").value.trim().toLowerCase();
+  const joinMessage = document.getElementById("join_message").value.trim();
+
+  if (!joinEmail) {
+    Swal.fire({
+      icon: "warning",
+      title: "Missing Email",
+      text: "Please sign in with Google first.",
     });
+    return;
+  }
 
-    if (!joinMessage) return;
+  if (joinMessage.length > 200) {
+    Swal.fire({
+      icon: "warning",
+      title: "Message Too Long",
+      text: `Your message must not exceed 200 characters. (${joinMessage.length} entered)`,
+    });
+    return;
+  }
 
+  try {
     Swal.fire({
       title: "Submitting your request...",
+      text: "Please wait a moment.",
       didOpen: () => Swal.showLoading(),
       allowOutsideClick: false,
     });
 
-    // ✅ Store in Firebase
     await db.ref("join_requests").push({
-      email: user.email,
-      name: user.displayName,
+      email: joinEmail,
       message: joinMessage,
       timestamp: new Date().toISOString(),
     });
 
-    // ✅ Send confirmation via EmailJS
     await emailjs.send("service_f4zsz1r", "template_re3enfm", {
-      to_name: user.displayName,
-      to_email: user.email,
+      to_name: joinEmail,
+      to_email: joinEmail,
     });
 
     Swal.fire({
       icon: "success",
       title: "Request Sent!",
-      text: `Thank you, ${user.displayName}. A confirmation email has been sent to ${user.email}.`,
+      text: "Your request was submitted and a confirmation email has been sent.",
     });
+
+    joinPopup.style.display = "none";
+    document.getElementById("joinForm").reset();
   } catch (error) {
-    console.error(error);
+    console.error("Error:", error);
     Swal.fire({
       icon: "error",
-      title: "Google Sign-In Failed",
-      text: "Unable to sign in with Google. Please try again.",
+      title: "Submission Failed",
+      text: "There was an error submitting your request or sending confirmation.",
     });
   }
 });
