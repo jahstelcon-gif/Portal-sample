@@ -45,26 +45,20 @@ const loginBtn = document.getElementById("login");
 const popLogin = document.getElementById("pop_login");
 const closeBtn = document.querySelector("#pop_login .close");
 
-loginBtn.addEventListener("click", () => {
-  popLogin.style.display = "flex";
-});
-closeBtn.addEventListener("click", () => {
-  popLogin.style.display = "none";
-});
+loginBtn.addEventListener("click", () => popLogin.style.display = "flex");
+closeBtn.addEventListener("click", () => popLogin.style.display = "none");
 window.addEventListener("click", (e) => {
-  if (e.target === popLogin) {
-    popLogin.style.display = "none";
-  }
+  if (e.target === popLogin) popLogin.style.display = "none";
 });
 
 // =======================
-// LOGIN FUNCTION
+// LOGIN FUNCTION (DEBUGGED)
 // =======================
 const loginForm = document.getElementById("universalLoginFormPopup");
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("login_email_popup").value.trim();
+  const email = document.getElementById("login_email_popup").value.trim().toLowerCase();
   const password = document.getElementById("login_password_popup").value;
 
   if (!email || !password) {
@@ -77,6 +71,7 @@ loginForm.addEventListener("submit", async (e) => {
   }
 
   try {
+    // ✅ Ensure correct path
     const snap = await db.ref("accounts").orderByChild("email").equalTo(email).once("value");
 
     if (!snap.exists()) {
@@ -88,8 +83,11 @@ loginForm.addEventListener("submit", async (e) => {
       return;
     }
 
+    // ✅ Get the first matching record
     let acc = null;
     snap.forEach((child) => acc = child.val());
+
+    console.log("Account found:", acc);
 
     if (!acc || acc.password !== password) {
       Swal.fire({
@@ -109,26 +107,28 @@ loginForm.addEventListener("submit", async (e) => {
       text: "You have successfully logged in.",
       icon: "success",
       confirmButtonText: "Continue",
-      timer: 2500,
+      timer: 2000,
       timerProgressBar: true
     }).then(() => {
-      if (acc.role === "admin") {
+      const role = (acc.role || "").toLowerCase();
+      console.log("Redirecting to:", role);
+      if (role === "admin") {
         window.location.href = "admin_dashboard.html";
-      } else if (acc.role === "teamleader") {
+      } else if (role === "teamleader") {
         window.location.href = "team_dashboard.html";
-      } else if (acc.role === "employee") {
+      } else if (role === "employee") {
         window.location.href = "employee_dashboard.html";
       } else {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: "Unknown role."
+          text: `Unknown role: ${acc.role}`
         });
       }
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("Firebase Error:", err);
     Swal.fire({
       icon: "error",
       title: "Database Error",
@@ -144,16 +144,10 @@ const joinBtn = document.getElementById("join");
 const joinPopup = document.getElementById("pop_join");
 const closeJoin = document.getElementById("closeJoin");
 
-joinBtn.addEventListener("click", () => {
-  joinPopup.style.display = "flex";
-});
-closeJoin.addEventListener("click", () => {
-  joinPopup.style.display = "none";
-});
+joinBtn.addEventListener("click", () => joinPopup.style.display = "flex");
+closeJoin.addEventListener("click", () => joinPopup.style.display = "none");
 window.addEventListener("click", (e) => {
-  if (e.target === joinPopup) {
-    joinPopup.style.display = "none";
-  }
+  if (e.target === joinPopup) joinPopup.style.display = "none";
 });
 
 // =======================
@@ -169,7 +163,7 @@ document.getElementById("contact_num").addEventListener("input", function () {
 document.getElementById("joinForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
-  const joinEmail = document.getElementById("join_email").value.trim();
+  const joinEmail = document.getElementById("join_email").value.trim().toLowerCase();
   const contactNum = document.getElementById("contact_num").value.trim();
   const joinMessage = document.getElementById("join_message").value.trim();
 
@@ -182,11 +176,11 @@ document.getElementById("joinForm").addEventListener("submit", function (e) {
     return;
   }
 
-  if (!/^\d{1,11}$/.test(contactNum)) {
+  if (!/^\d{11}$/.test(contactNum)) {
     Swal.fire({
       icon: "error",
       title: "Invalid Contact Number",
-      text: "Contact number must contain up to 11 digits only."
+      text: "Contact number must contain exactly 11 digits."
     });
     return;
   }
