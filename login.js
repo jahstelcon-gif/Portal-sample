@@ -1,6 +1,27 @@
+// =======================
+// SLIDER CONTROL
+// =======================
+const slides = document.querySelector('.slides');
+const slideCount = document.querySelectorAll('.slides img').length;
+let index = 0;
+
+function showNextSlide(interval) {
+  setTimeout(function changeSlide() {
+    index = (index + 1) % slideCount;
+    slides.style.transform = `translateX(${-index * 100}%)`;
+    const nextInterval = (index === 0) ? 6000 : 4000;
+    showNextSlide(nextInterval);
+  }, interval);
+}
+showNextSlide(6000);
+
+function togglePasswordPopup() {
+  const pass = document.getElementById("login_password_popup");
+  pass.type = pass.type === "password" ? "text" : "password";
+}
 
 // =======================
-// Firebase Connection
+// FIREBASE CONNECTION
 // =======================
 const firebaseConfig = {
   apiKey: "AIzaSyB1Gbmp2j2cTfnUmuWTjcL2ypauUpQn8Qc",
@@ -9,13 +30,13 @@ const firebaseConfig = {
   projectId: "jahsportal",
   storageBucket: "jahsportal.firebasestorage.app",
   messagingSenderId: "798312139932",
-  appId: "1:798312139932:web:2f6654cdd82a23406ff159",
+  appId: "1:798312139932:web:2f6654cdd82a23406ff159"
 };
 
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
-const auth = firebase.auth();
-const googleProvider = new firebase.auth.GoogleAuthProvider();
 
 // =======================
 // LOGIN POPUP CONTROLS
@@ -24,62 +45,57 @@ const loginBtn = document.getElementById("login");
 const popLogin = document.getElementById("pop_login");
 const closeBtn = document.querySelector("#pop_login .close");
 
-loginBtn.addEventListener("click", () => (popLogin.style.display = "flex"));
-closeBtn.addEventListener("click", () => (popLogin.style.display = "none"));
+loginBtn.addEventListener("click", () => {
+  popLogin.style.display = "flex";
+});
+closeBtn.addEventListener("click", () => {
+  popLogin.style.display = "none";
+});
 window.addEventListener("click", (e) => {
-  if (e.target === popLogin) popLogin.style.display = "none";
+  if (e.target === popLogin) {
+    popLogin.style.display = "none";
+  }
 });
 
 // =======================
 // LOGIN FUNCTION
 // =======================
-const loginForm = document.getElementById("universalLoginForm");
+const loginForm = document.getElementById("universalLoginFormPopup");
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("login_email").value.trim();
-  const password = document.getElementById("login_password").value;
+  const email = document.getElementById("login_email_popup").value.trim();
+  const password = document.getElementById("login_password_popup").value;
 
   if (!email || !password) {
     Swal.fire({
       icon: "warning",
       title: "Missing Input",
-      text: "Please enter both email and password.",
+      text: "Please enter both email and password."
     });
     return;
   }
 
   try {
-    Swal.fire({
-      title: "Logging in...",
-      text: "Please wait while we verify your credentials.",
-      didOpen: () => Swal.showLoading(),
-      allowOutsideClick: false,
-    });
-
-    const snap = await db
-      .ref("accounts")
-      .orderByChild("email")
-      .equalTo(email)
-      .once("value");
+    const snap = await db.ref("accounts").orderByChild("email").equalTo(email).once("value");
 
     if (!snap.exists()) {
       Swal.fire({
         icon: "error",
         title: "Login Failed",
-        text: "Invalid email or password.",
+        text: "Invalid email or password."
       });
       return;
     }
 
     let acc = null;
-    snap.forEach((child) => (acc = child.val()));
+    snap.forEach((child) => acc = child.val());
 
     if (!acc || acc.password !== password) {
       Swal.fire({
         icon: "error",
         title: "Login Failed",
-        text: "Invalid email or password.",
+        text: "Invalid email or password."
       });
       return;
     }
@@ -92,19 +108,31 @@ loginForm.addEventListener("submit", async (e) => {
       title: `Welcome, ${acc.name}!`,
       text: "You have successfully logged in.",
       icon: "success",
+      confirmButtonText: "Continue",
       timer: 2500,
-      timerProgressBar: true,
+      timerProgressBar: true
     }).then(() => {
-      if (acc.role === "admin") window.location.href = "admin_dashboard.html";
-      else if (acc.role === "teamleader") window.location.href = "team_dashboard.html";
-      else if (acc.role === "employee") window.location.href = "employee_dashboard.html";
+      if (acc.role === "admin") {
+        window.location.href = "admin_dashboard.html";
+      } else if (acc.role === "teamleader") {
+        window.location.href = "team_dashboard.html";
+      } else if (acc.role === "employee") {
+        window.location.href = "employee_dashboard.html";
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Unknown role."
+        });
+      }
     });
+
   } catch (err) {
     console.error(err);
     Swal.fire({
       icon: "error",
       title: "Database Error",
-      text: "Something went wrong. Please try again.",
+      text: "Something went wrong. Please try again."
     });
   }
 });
@@ -116,108 +144,83 @@ const joinBtn = document.getElementById("join");
 const joinPopup = document.getElementById("pop_join");
 const closeJoin = document.getElementById("closeJoin");
 
-joinBtn.addEventListener("click", () => (joinPopup.style.display = "flex"));
-closeJoin.addEventListener("click", () => (joinPopup.style.display = "none"));
+joinBtn.addEventListener("click", () => {
+  joinPopup.style.display = "flex";
+});
+closeJoin.addEventListener("click", () => {
+  joinPopup.style.display = "none";
+});
 window.addEventListener("click", (e) => {
-  if (e.target === joinPopup) joinPopup.style.display = "none";
+  if (e.target === joinPopup) {
+    joinPopup.style.display = "none";
+  }
 });
 
 // =======================
-// ✅ EMAILJS CONFIG
+// BLOCK NON-NUMERIC INPUT
 // =======================
-(function () {
-  emailjs.init("I8tvyDhY29nbwRvAE"); // <-- Your EmailJS Public Key
-})();
+document.getElementById("contact_num").addEventListener("input", function () {
+  this.value = this.value.replace(/\D/g, ''); // remove non-numbers
+});
 
 // =======================
-// ✅ GOOGLE SIGN-IN FOR JOIN FORM
+// JOIN FORM VALIDATION
 // =======================
-const googleJoinBtn = document.getElementById("googleJoinBtn");
-if (googleJoinBtn) {
-  googleJoinBtn.addEventListener("click", async () => {
-    try {
-      const result = await auth.signInWithPopup(googleProvider);
-      const user = result.user;
-      document.getElementById("join_email").value = user.email;
-
-      Swal.fire({
-        icon: "success",
-        title: "Google Account Linked",
-        text: `Signed in as ${user.email}`,
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } catch (error) {
-      console.error("Google Sign-in Error:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Sign-in Failed",
-        text: error.message,
-      });
-    }
-  });
-}
-
-// =======================
-// JOIN OUR TEAM FORM
-// =======================
-document.getElementById("joinForm").addEventListener("submit", async function (e) {
+document.getElementById("joinForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
-  const joinEmail = document.getElementById("join_email").value.trim().toLowerCase();
+  const joinEmail = document.getElementById("join_email").value.trim();
+  const contactNum = document.getElementById("contact_num").value.trim();
   const joinMessage = document.getElementById("join_message").value.trim();
 
-  if (!joinEmail) {
+  if (!joinEmail || !contactNum || !joinMessage) {
     Swal.fire({
       icon: "warning",
-      title: "Missing Email",
-      text: "Please sign in with Google first.",
+      title: "Missing Input",
+      text: "Please fill in all fields."
+    });
+    return;
+  }
+
+  if (!/^\d{1,11}$/.test(contactNum)) {
+    Swal.fire({
+      icon: "error",
+      title: "Invalid Contact Number",
+      text: "Contact number must contain up to 11 digits only."
     });
     return;
   }
 
   if (joinMessage.length > 200) {
     Swal.fire({
-      icon: "warning",
+      icon: "error",
       title: "Message Too Long",
-      text: `Your message must not exceed 200 characters. (${joinMessage.length} entered)`,
+      text: "Message must be 200 characters or less."
     });
     return;
   }
 
-  try {
-    Swal.fire({
-      title: "Submitting your request...",
-      text: "Please wait a moment.",
-      didOpen: () => Swal.showLoading(),
-      allowOutsideClick: false,
-    });
-
-    await db.ref("join_requests").push({
-      email: joinEmail,
-      message: joinMessage,
-      timestamp: new Date().toISOString(),
-    });
-
-    await emailjs.send("service_f4zsz1r", "template_re3enfm", {
-      to_name: joinEmail,
-      to_email: joinEmail,
-    });
-
+  db.ref("join_requests").push({
+    email: joinEmail,
+    contact_number: contactNum,
+    message: joinMessage,
+    timestamp: new Date().toISOString()
+  })
+  .then(() => {
     Swal.fire({
       icon: "success",
-      title: "Request Sent!",
-      text: "Your request was submitted and a confirmation email has been sent.",
+      title: "Request Sent",
+      text: "Your request has been submitted successfully!"
     });
-
     joinPopup.style.display = "none";
     document.getElementById("joinForm").reset();
-  } catch (error) {
+  })
+  .catch((error) => {
     console.error("Error:", error);
     Swal.fire({
       icon: "error",
-      title: "Submission Failed",
-      text: "There was an error submitting your request or sending confirmation.",
+      title: "Error",
+      text: "There was an error submitting your request."
     });
-  }
+  });
 });
