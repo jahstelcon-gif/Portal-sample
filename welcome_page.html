@@ -44,24 +44,6 @@
         </div>
         <button type="submit">Sign In</button>
       </form>
-
-      <!-- 🔹 Google Sign-In Button -->
-      <button id="googleSignInBtn" style="
-        margin-top: 15px;
-        background-color: white;
-        color: #555;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        padding: 10px 20px;
-        cursor: pointer;
-        font-weight: bold;
-      ">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
-             alt="Google Logo" 
-             style="height: 18px; vertical-align: middle; margin-right: 8px;">
-        Sign in with Google
-      </button>
-
       <img src="qrcode.png" style="height: 330px;">
     </div>
 
@@ -81,8 +63,31 @@
       <div class="popup_right">
         <h2>Join Our Team</h2>
         <form id="joinForm">
-          <label for="join_email">Email:</label>
-          <input type="email" id="join_email" required>
+
+          <!-- 🔹 REPLACED MANUAL EMAIL INPUT WITH GOOGLE SIGN-IN -->
+          <label>Email:</label>
+          <div id="googleSignInContainer">
+            <button type="button" id="googleJoinBtn" style="
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              gap:8px;
+              background:white;
+              border:1px solid #ccc;
+              padding:8px 12px;
+              border-radius:6px;
+              cursor:pointer;
+              width:100%;
+              margin-bottom:10px;
+              font-weight:bold;
+            ">
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="height:20px;">
+              Sign in with Google
+            </button>
+          </div>
+
+          <!-- Hidden email field auto-filled after Google sign-in -->
+          <input type="hidden" id="join_email" required>
 
           <label for="join_message">Message Us:</label>
           <textarea id="join_message" rows="4" required></textarea>
@@ -92,50 +97,26 @@
     </div>
   </div>
 
+  <!-- Login Popup -->
+  <div id="pop_login" class="popup_overlay">
+    <div class="login_box">
+      <span class="close" style="color: white;">&times;</span>
+      <h2>Login</h2>
+      <form id="universalLoginForm">
+        <input type="email" id="login_email_popup" placeholder="Email" required><br><br>
+        <div style="position:relative;">
+          <input type="password" id="login_password_popup" placeholder="Password" required>
+          <span class="toggle-password" onclick="togglePasswordPopup()">👁</span>
+        </div><br>
+        <button type="submit">Sign In</button>
+      </form>
+    </div>
+  </div>
+
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-  <script>
-    // ---- Firebase Config ----
-    const firebaseConfig = {
-      apiKey: "AIzaSyB1Gbmp2j2cTfnUmuWTjcL2ypauUpQn8Qc",
-      authDomain: "jahsportal.firebaseapp.com",
-      databaseURL: "https://jahsportal-default-rtdb.firebaseio.com",
-      projectId: "jahsportal",
-      storageBucket: "jahsportal.firebasestorage.app",
-      messagingSenderId: "798312139932",
-      appId: "1:798312139932:web:2f6654cdd82a23406ff159"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-
-    // 🔹 Google Sign-In Functionality
-    const googleProvider = new firebase.auth.GoogleAuthProvider();
-
-    document.getElementById('googleSignInBtn').addEventListener('click', () => {
-      auth.signInWithPopup(googleProvider)
-        .then((result) => {
-          const user = result.user;
-          Swal.fire({
-            icon: 'success',
-            title: 'Welcome!',
-            text: `Hello ${user.displayName}, you have signed in successfully!`
-          });
-          console.log("User:", user);
-        })
-        .catch((error) => {
-          console.error("Google Sign-In Error:", error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Sign-In Failed',
-            text: error.message
-          });
-        });
-    });
-  </script>
 
   <!-- JS for Slider -->
   <script>
