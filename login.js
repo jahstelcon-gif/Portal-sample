@@ -1,5 +1,5 @@
 // =======================
-// Database connection
+// Firebase Connection
 // =======================
 const firebaseConfig = {
   apiKey: "AIzaSyB1Gbmp2j2cTfnUmuWTjcL2ypauUpQn8Qc",
@@ -23,16 +23,10 @@ const loginBtn = document.getElementById("login");
 const popLogin = document.getElementById("pop_login");
 const closeBtn = document.querySelector("#pop_login .close");
 
-loginBtn.addEventListener("click", () => {
-  popLogin.style.display = "flex";
-});
-closeBtn.addEventListener("click", () => {
-  popLogin.style.display = "none";
-});
+loginBtn.addEventListener("click", () => (popLogin.style.display = "flex"));
+closeBtn.addEventListener("click", () => (popLogin.style.display = "none"));
 window.addEventListener("click", (e) => {
-  if (e.target === popLogin) {
-    popLogin.style.display = "none";
-  }
+  if (e.target === popLogin) popLogin.style.display = "none";
 });
 
 // =======================
@@ -55,6 +49,13 @@ loginForm.addEventListener("submit", async (e) => {
   }
 
   try {
+    Swal.fire({
+      title: "Logging in...",
+      text: "Please wait while we verify your credentials.",
+      didOpen: () => Swal.showLoading(),
+      allowOutsideClick: false,
+    });
+
     const snap = await db
       .ref("accounts")
       .orderByChild("email")
@@ -127,27 +128,21 @@ const joinBtn = document.getElementById("join");
 const joinPopup = document.getElementById("pop_join");
 const closeJoin = document.getElementById("closeJoin");
 
-joinBtn.addEventListener("click", () => {
-  joinPopup.style.display = "flex";
-});
-closeJoin.addEventListener("click", () => {
-  joinPopup.style.display = "none";
-});
+joinBtn.addEventListener("click", () => (joinPopup.style.display = "flex"));
+closeJoin.addEventListener("click", () => (joinPopup.style.display = "none"));
 window.addEventListener("click", (e) => {
-  if (e.target === joinPopup) {
-    joinPopup.style.display = "none";
-  }
+  if (e.target === joinPopup) joinPopup.style.display = "none";
 });
 
 // =======================
 // ✅ EMAILJS CONFIG
 // =======================
 (function () {
-  emailjs.init("I8tvyDhY29nbwRvAE"); // <-- Replace this with your EmailJS Public Key
+  emailjs.init("I8tvyDhY29nbwRvAE"); // <-- Your EmailJS Public Key
 })();
 
 // =======================
-// JOIN OUR TEAM FORM (with SweetAlert2, Email Validation, 200-word constraint)
+// JOIN OUR TEAM FORM (with validation + SweetAlert loader)
 // =======================
 document.getElementById("joinForm").addEventListener("submit", async function (e) {
   e.preventDefault();
@@ -155,7 +150,7 @@ document.getElementById("joinForm").addEventListener("submit", async function (e
   const joinEmail = document.getElementById("join_email").value.trim();
   const joinMessage = document.getElementById("join_message").value.trim();
 
-  // ✅ 1. Check message length (minimum 200 words)
+  // ✅ 1. Minimum 200 words
   const wordCount = joinMessage.split(/\s+/).filter(Boolean).length;
   if (wordCount < 200) {
     Swal.fire({
@@ -166,7 +161,7 @@ document.getElementById("joinForm").addEventListener("submit", async function (e
     return;
   }
 
-  // ✅ 2. Basic email format check
+  // ✅ 2. Validate email format
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailPattern.test(joinEmail)) {
     Swal.fire({
@@ -177,26 +172,35 @@ document.getElementById("joinForm").addEventListener("submit", async function (e
     return;
   }
 
-  // ✅ 3. Store request in Firebase
   try {
+    // ✅ Show loading alert
+    Swal.fire({
+      title: "Submitting your request...",
+      text: "Please wait a moment.",
+      didOpen: () => Swal.showLoading(),
+      allowOutsideClick: false,
+    });
+
+    // ✅ 3. Save request in Firebase
     await db.ref("join_requests").push({
       email: joinEmail,
       message: joinMessage,
       timestamp: new Date().toISOString(),
     });
 
-    // ✅ 4. Send email confirmation via EmailJS
+    // ✅ 4. Send confirmation email via EmailJS
     await emailjs.send("service_f4zsz1r", "template_re3enfm", {
       to_name: joinEmail,
       to_email: joinEmail,
-      message: "Thank you for joining our team! We received your message and will get back to you soon.",
     });
 
+    // ✅ 5. Success message
     Swal.fire({
       icon: "success",
       title: "Request Sent!",
       text: "Your request was submitted and a confirmation email has been sent.",
     });
+
     joinPopup.style.display = "none";
     document.getElementById("joinForm").reset();
   } catch (error) {
