@@ -3,12 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <title>JAHS Telecon Portal</title>
-  
+
+  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
- <link rel="stylesheet" href="welcome_page.css">
-    
+
+  <!-- EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+  <link rel="stylesheet" href="welcome_page.css">
 </head>
 <body>
 
@@ -25,8 +28,9 @@
       <img src="bg3.png" alt="Slide 3">
       <img src="bg4.png" alt="Slide 4">
     </div>
+
     <div class="right-card">
-      <img src="logowebb.png" style="height: 130px; ">
+      <img src="logowebb.png" style="height: 130px;">
       <h1>Login</h1>
       <form id="universalLoginForm">
         <div class="input-group">
@@ -40,20 +44,18 @@
         </div>
         <button type="submit">Sign In</button>
       </form>
-      <img src="qrcode.png  " style="height: 330px; ">
+      <img src="qrcode.png" style="height: 330px;">
     </div>
+
     <button class="center-button" id="join">Join our Team!</button>
   </div>
-
-  <!-- Footer -->
-
 
   <!-- Join Popup -->
   <div class="popup_overlay" id="pop_join">
     <div class="popup_box">
       <span class="close" id="closeJoin">&times;</span>
       <div class="popup_left">
-        <iframe 
+        <iframe
           src="https://www.google.com/maps?q=14.8070035,120.8683621&hl=es;z=14&output=embed"
           allowfullscreen>
         </iframe>
@@ -63,8 +65,7 @@
         <form id="joinForm">
           <label for="join_email">Email:</label>
           <input type="email" id="join_email" required>
-          <label for="join_email">Contact Number:</label>
-           <input type="contact_num" id="contact_num" required>
+
           <label for="join_message">Message Us:</label>
           <textarea id="join_message" rows="4" required></textarea>
           <button type="submit">Submit</button>
@@ -123,4 +124,3 @@
   <script src="login.js"></script>
 </body>
 </html>
-
