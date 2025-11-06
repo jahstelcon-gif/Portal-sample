@@ -140,70 +140,71 @@ window.addEventListener("click", (e) => {
 })();
 
 // =======================
-// JOIN OUR TEAM FORM (max 200 characters + Gmail-only validation)
+// ✅ Google Sign-In (Join Form)
 // =======================
-document.getElementById("joinForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
+const googleJoinBtn = document.getElementById("googleJoinBtn");
+const provider = new firebase.auth.GoogleAuthProvider();
 
-  const joinEmail = document.getElementById("join_email").value.trim().toLowerCase();
-  const joinMessage = document.getElementById("join_message").value.trim();
-
-  // ✅ Character limit — MAXIMUM 200 characters
-  if (joinMessage.length > 200) {
-    Swal.fire({
-      icon: "warning",
-      title: "Message Too Long",
-      text: `Your message must not exceed 200 characters. (Currently ${joinMessage.length} characters)`,
-    });
-    return;
-  }
-
-  // ✅ Gmail-only validation
-  const gmailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-  if (!gmailPattern.test(joinEmail)) {
-    Swal.fire({
-      icon: "error",
-      title: "Invalid Email",
-      text: "Please enter a valid Gmail address (e.g., example@gmail.com).",
-    });
-    return;
-  }
-
+googleJoinBtn.addEventListener("click", async () => {
   try {
+    const result = await firebase.auth().signInWithPopup(provider);
+    const user = result.user;
+
+    if (!user || !user.email.endsWith("@gmail.com")) {
+      Swal.fire({
+        icon: "error",
+        title: "Gmail Required",
+        text: "Please use a valid Gmail account.",
+      });
+      return;
+    }
+
+    // Ask for message input after sign-in
+    const { value: joinMessage } = await Swal.fire({
+      title: "Join Our Team",
+      input: "textarea",
+      inputLabel: "Enter your message (max 200 characters)",
+      inputPlaceholder: "Type your message here...",
+      inputAttributes: { maxlength: 200 },
+      inputValidator: (value) =>
+        !value ? "Message cannot be empty!" : undefined,
+      showCancelButton: true,
+      confirmButtonText: "Submit",
+    });
+
+    if (!joinMessage) return;
+
     Swal.fire({
       title: "Submitting your request...",
-      text: "Please wait a moment.",
       didOpen: () => Swal.showLoading(),
       allowOutsideClick: false,
     });
 
-    // ✅ Save to Firebase
+    // ✅ Store in Firebase
     await db.ref("join_requests").push({
-      email: joinEmail,
+      email: user.email,
+      name: user.displayName,
       message: joinMessage,
       timestamp: new Date().toISOString(),
     });
 
-    // ✅ Send confirmation email using EmailJS
+    // ✅ Send confirmation via EmailJS
     await emailjs.send("service_f4zsz1r", "template_re3enfm", {
-      to_name: joinEmail,
-      to_email: joinEmail,
+      to_name: user.displayName,
+      to_email: user.email,
     });
 
     Swal.fire({
       icon: "success",
       title: "Request Sent!",
-      text: "Your request was submitted and a confirmation email has been sent.",
+      text: `Thank you, ${user.displayName}. A confirmation email has been sent to ${user.email}.`,
     });
-
-    joinPopup.style.display = "none";
-    document.getElementById("joinForm").reset();
   } catch (error) {
-    console.error("Error:", error);
+    console.error(error);
     Swal.fire({
       icon: "error",
-      title: "Submission Failed",
-      text: "There was an error submitting your request or sending confirmation.",
+      title: "Google Sign-In Failed",
+      text: "Unable to sign in with Google. Please try again.",
     });
   }
 });
