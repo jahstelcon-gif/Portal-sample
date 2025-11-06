@@ -13,6 +13,8 @@ const firebaseConfig = {
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const auth = firebase.auth();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
 
 // =======================
 // LOGIN POPUP CONTROLS
@@ -28,96 +30,11 @@ window.addEventListener("click", (e) => {
 });
 
 // =======================
-// LOGIN FUNCTION
+// EMAILJS CONFIG
 // =======================
-const loginForm = document.getElementById("universalLoginForm");
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const email = document.getElementById("login_email").value.trim();
-  const password = document.getElementById("login_password").value;
-
-  if (!email || !password) {
-    Swal.fire({
-      icon: "warning",
-      title: "Missing Input",
-      text: "Please enter both email and password.",
-    });
-    return;
-  }
-
-  try {
-    Swal.fire({
-      title: "Logging in...",
-      text: "Please wait while we verify your credentials.",
-      didOpen: () => Swal.showLoading(),
-      allowOutsideClick: false,
-    });
-
-    const snap = await db
-      .ref("accounts")
-      .orderByChild("email")
-      .equalTo(email)
-      .once("value");
-
-    if (!snap.exists()) {
-      Swal.fire({
-        icon: "error",
-        title: "Login Failed",
-        text: "Invalid email or password.",
-      });
-      return;
-    }
-
-    let acc = null;
-    snap.forEach((child) => {
-      acc = child.val();
-    });
-
-    if (!acc || acc.password !== password) {
-      Swal.fire({
-        icon: "error",
-        title: "Login Failed",
-        text: "Invalid email or password.",
-      });
-      return;
-    }
-
-    localStorage.setItem("email", acc.email);
-    localStorage.setItem("role", acc.role);
-    localStorage.setItem("userName", acc.name);
-
-    Swal.fire({
-      title: `Welcome, ${acc.name}!`,
-      text: "You have successfully logged in.",
-      icon: "success",
-      confirmButtonText: "Continue",
-      timer: 2500,
-      timerProgressBar: true,
-    }).then(() => {
-      if (acc.role === "admin") {
-        window.location.href = "admin_dashboard.html";
-      } else if (acc.role === "teamleader") {
-        window.location.href = "team_dashboard.html";
-      } else if (acc.role === "employee") {
-        window.location.href = "employee_dashboard.html";
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Unknown role.",
-        });
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    Swal.fire({
-      icon: "error",
-      title: "Database Error",
-      text: "Something went wrong. Please try again.",
-    });
-  }
-});
+(function () {
+  emailjs.init("I8tvyDhY29nbwRvAE");
+})();
 
 // =======================
 // JOIN POPUP CONTROLS
@@ -133,38 +50,59 @@ window.addEventListener("click", (e) => {
 });
 
 // =======================
-// ✅ EMAILJS CONFIG
+// GOOGLE SIGN-IN FOR JOIN FORM
 // =======================
-(function () {
-  emailjs.init("I8tvyDhY29nbwRvAE"); // <-- Your EmailJS Public Key
-})();
+const googleJoinBtn = document.getElementById("googleJoinBtn");
+const joinEmailInput = document.getElementById("join_email");
+
+if (googleJoinBtn) {
+  googleJoinBtn.addEventListener("click", async () => {
+    try {
+      const result = await auth.signInWithPopup(googleProvider);
+      const user = result.user;
+      joinEmailInput.value = user.email;
+
+      Swal.fire({
+        icon: "success",
+        title: "Google Account Linked",
+        text: `Signed in as ${user.email}`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      console.error("Google Sign-in Error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Sign-in Failed",
+        text: error.message,
+      });
+    }
+  });
+}
 
 // =======================
-// JOIN OUR TEAM FORM (max 200 characters + Gmail-only validation)
+// JOIN FORM SUBMIT
 // =======================
 document.getElementById("joinForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
-  const joinEmail = document.getElementById("join_email").value.trim().toLowerCase();
+  const joinEmail = joinEmailInput.value.trim().toLowerCase();
   const joinMessage = document.getElementById("join_message").value.trim();
 
-  // ✅ Character limit — MAXIMUM 200 characters
-  if (joinMessage.length > 200) {
+  if (!joinEmail) {
     Swal.fire({
       icon: "warning",
-      title: "Message Too Long",
-      text: `Your message must not exceed 200 characters. (Currently ${joinMessage.length} characters)`,
+      title: "Missing Email",
+      text: "Please sign in with Google first.",
     });
     return;
   }
 
-  // ✅ Gmail-only validation
-  const gmailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-  if (!gmailPattern.test(joinEmail)) {
+  if (joinMessage.length > 200) {
     Swal.fire({
-      icon: "error",
-      title: "Invalid Email",
-      text: "Please enter a valid Gmail address (e.g., example@gmail.com).",
+      icon: "warning",
+      title: "Message Too Long",
+      text: `Your message must not exceed 200 characters. (${joinMessage.length} entered)`,
     });
     return;
   }
@@ -177,14 +115,12 @@ document.getElementById("joinForm").addEventListener("submit", async function (e
       allowOutsideClick: false,
     });
 
-    // ✅ Save to Firebase
     await db.ref("join_requests").push({
       email: joinEmail,
       message: joinMessage,
       timestamp: new Date().toISOString(),
     });
 
-    // ✅ Send confirmation email using EmailJS
     await emailjs.send("service_f4zsz1r", "template_re3enfm", {
       to_name: joinEmail,
       to_email: joinEmail,
