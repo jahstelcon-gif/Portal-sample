@@ -140,7 +140,7 @@ window.addEventListener("click", (e) => {
 })();
 
 // =======================
-// JOIN OUR TEAM FORM
+// JOIN OUR TEAM FORM (max 200 words)
 // =======================
 document.getElementById("joinForm").addEventListener("submit", async function (e) {
   e.preventDefault();
@@ -148,16 +148,18 @@ document.getElementById("joinForm").addEventListener("submit", async function (e
   const joinEmail = document.getElementById("join_email").value.trim();
   const joinMessage = document.getElementById("join_message").value.trim();
 
+  // ✅ Word count limit — MAXIMUM 200 words
   const wordCount = joinMessage.split(/\s+/).filter(Boolean).length;
-  if (wordCount < 200) {
+  if (wordCount > 200) {
     Swal.fire({
       icon: "warning",
-      title: "Message Too Short",
-      text: `Your message must be at least 200 words. (Currently ${wordCount} words)`,
+      title: "Message Too Long",
+      text: `Your message must not exceed 200 words. (Currently ${wordCount} words)`,
     });
     return;
   }
 
+  // ✅ Validate email format
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailPattern.test(joinEmail)) {
     Swal.fire({
