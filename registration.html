@@ -71,9 +71,9 @@
     const db = firebase.database();
 
     // --- Initialize EmailJS ---
-    emailjs.init("I8tvyDhY29nbwRvAE"); // ✅ your public key
+    emailjs.init("I8tvyDhY29nbwRvAE");
 
-    // --- Helper: Send Email on successful registration ---
+    // --- Helper: Send Email ---
     function sendCongratsEmail(toEmail, toName) {
       emailjs.send("service_f4zsz1r", "template_ogac97k", {
         to_email: toEmail,
@@ -128,15 +128,17 @@
           accountExistsByEmail(user.email, (existingSnap) => {
             if (existingSnap) {
               msg.innerHTML = `<p class="success">Welcome back, ${user.displayName}!</p>`;
-              sendCongratsEmail(user.email, user.displayName); // Optional: also send email on login
+              sendCongratsEmail(user.email, user.displayName); // Optional
             } else {
               // New user registration
+              const defaultPassword = "JAHS1234"; // ✅ Default password
+
               getNextAccountNumber((accNum) => {
                 db.ref("accounts").push({
                   accountNumber: accNum,
                   email: user.email,
                   name: user.displayName,
-                  password: "",
+                  password: defaultPassword, // ✅ Set default password
                   role: "employee"
                 })
                 .then(() => {
