@@ -80,7 +80,7 @@
         to_name: toName
       })
       .then(() => {
-        document.getElementById("msg").innerHTML = `<p class="success">✅ Email sent successfully to ${toEmail}</p>`;
+        document.getElementById("msg").innerHTML = `<p class="success">✅ We send you an Email to berify it's you ${toEmail}</p>`;
       })
       .catch((error) => {
         console.error("EmailJS error:", error);
@@ -122,7 +122,7 @@
           const userInfo = document.getElementById("user-info");
           const msg = document.getElementById("msg");
 
-          userInfo.innerHTML = `<p>👋 Signed in as <b>${user.displayName}</b><br>${user.email}</p>`;
+          userInfo.innerHTML = `<p>👋 Registered as <b>${user.displayName}</b><br>${user.email}</p>`;
 
           // Check if user already exists
           accountExistsByEmail(user.email, (existingSnap) => {
