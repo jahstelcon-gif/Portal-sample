@@ -15,22 +15,9 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 // =======================
-// LOGIN POPUP CONTROLS
-// =======================
-const loginBtn = document.getElementById("login");
-const popLogin = document.getElementById("pop_login");
-const closeBtn = document.querySelector("#pop_login .close");
-
-loginBtn.addEventListener("click", () => (popLogin.style.display = "flex"));
-closeBtn.addEventListener("click", () => (popLogin.style.display = "none"));
-window.addEventListener("click", (e) => {
-  if (e.target === popLogin) popLogin.style.display = "none";
-});
-
-// =======================
 // LOGIN FUNCTION
 // =======================
-const loginForm = document.getElementById("universalLoginForm");
+const loginForm = document.getElementById("loginForm");
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -38,48 +25,25 @@ loginForm.addEventListener("submit", async (e) => {
   const password = document.getElementById("login_password").value;
 
   if (!email || !password) {
-    Swal.fire({
-      icon: "warning",
-      title: "Missing Input",
-      text: "Please enter both email and password.",
-    });
+    Swal.fire({ icon: "warning", title: "Missing Input", text: "Please enter both email and password." });
     return;
   }
 
   try {
-    Swal.fire({
-      title: "Logging in...",
-      text: "Please wait while we verify your credentials.",
-      didOpen: () => Swal.showLoading(),
-      allowOutsideClick: false,
-    });
+    Swal.fire({ title: "Logging in...", text: "Please wait.", didOpen: () => Swal.showLoading(), allowOutsideClick: false });
 
-    const snap = await db
-      .ref("accounts")
-      .orderByChild("email")
-      .equalTo(email)
-      .once("value");
+    const snap = await db.ref("accounts").orderByChild("email").equalTo(email).once("value");
 
     if (!snap.exists()) {
-      Swal.fire({
-        icon: "error",
-        title: "Login Failed",
-        text: "Invalid email or password.",
-      });
+      Swal.fire({ icon: "error", title: "Login Failed", text: "Invalid email or password." });
       return;
     }
 
     let acc = null;
-    snap.forEach((child) => {
-      acc = child.val();
-    });
+    snap.forEach(child => { acc = child.val(); });
 
     if (!acc || acc.password !== password) {
-      Swal.fire({
-        icon: "error",
-        title: "Login Failed",
-        text: "Invalid email or password.",
-      });
+      Swal.fire({ icon: "error", title: "Login Failed", text: "Invalid email or password." });
       return;
     }
 
@@ -87,123 +51,74 @@ loginForm.addEventListener("submit", async (e) => {
     localStorage.setItem("role", acc.role);
     localStorage.setItem("userName", acc.name);
 
-    Swal.fire({
-      title: `Welcome, ${acc.name}!`,
-      text: "You have successfully logged in.",
-      icon: "success",
-      confirmButtonText: "Continue",
-      timer: 2500,
-      timerProgressBar: true,
-    }).then(() => {
-      if (acc.role === "admin") {
-        window.location.href = "admin_dashboard.html";
-      } else if (acc.role === "teamleader") {
-        window.location.href = "team_dashboard.html";
-      } else if (acc.role === "employee") {
-        window.location.href = "employee_dashboard.html";
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Unknown role.",
-        });
-      }
-    });
+    Swal.fire({ title: `Welcome, ${acc.name}!`, text: "Successfully logged in.", icon: "success", timer: 2500, timerProgressBar: true })
+      .then(() => {
+        if (acc.role === "admin") window.location.href = "admin_dashboard.html";
+        else if (acc.role === "teamleader") window.location.href = "team_dashboard.html";
+        else if (acc.role === "employee") window.location.href = "employee_dashboard.html";
+        else Swal.fire({ icon: "error", title: "Error", text: "Unknown role." });
+      });
+
   } catch (err) {
     console.error(err);
-    Swal.fire({
-      icon: "error",
-      title: "Database Error",
-      text: "Something went wrong. Please try again.",
-    });
+    Swal.fire({ icon: "error", title: "Database Error", text: "Something went wrong. Please try again." });
   }
 });
 
 // =======================
 // JOIN POPUP CONTROLS
 // =======================
-const joinBtn = document.getElementById("join");
+const joinBtn = document.getElementById("joinBtn");
 const joinPopup = document.getElementById("pop_join");
 const closeJoin = document.getElementById("closeJoin");
 
 joinBtn.addEventListener("click", () => (joinPopup.style.display = "flex"));
 closeJoin.addEventListener("click", () => (joinPopup.style.display = "none"));
-window.addEventListener("click", (e) => {
-  if (e.target === joinPopup) joinPopup.style.display = "none";
-});
+window.addEventListener("click", (e) => { if (e.target === joinPopup) joinPopup.style.display = "none"; });
 
 // =======================
-// ✅ EMAILJS CONFIG
+// EMAILJS INIT
 // =======================
-(function () {
-  emailjs.init("I8tvyDhY29nbwRvAE"); // <-- Your EmailJS Public Key
-})();
+emailjs.init("I8tvyDhY29nbwRvAE");
 
 // =======================
-// JOIN OUR TEAM FORM (max 200 words)
+// JOIN FORM SUBMISSION
 // =======================
-
-document.getElementById("joinForm").addEventListener("submit", async function (e) {
+document.getElementById("joinForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const joinEmail = document.getElementById("join_email").value.trim();
+  const joinEmail = document.getElementById("join_email").value.trim().toLowerCase();
   const joinMessage = document.getElementById("join_message").value.trim();
 
-  // ✅ Character limit — MAXIMUM 200 characters
   if (joinMessage.length > 200) {
-    Swal.fire({
-      icon: "warning",
-      title: "Message Too Long",
-      text: `Your message must not exceed 200 characters. (Currently ${joinMessage.length} characters)`,
-    });
+    Swal.fire({ icon: "warning", title: "Message Too Long", text: `Max 200 characters.` });
     return;
   }
 
-  // ✅ Validate email format
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailPattern.test(joinEmail)) {
-    Swal.fire({
-      icon: "error",
-      title: "Invalid Email",
-      text: "Please enter a valid email address.",
-    });
+  if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(joinEmail)) {
+    Swal.fire({ icon: "error", title: "Invalid Email", text: "Please enter a valid Gmail address." });
     return;
   }
 
   try {
-    Swal.fire({
-      title: "Submitting your request...",
-      text: "Please wait a moment.",
-      didOpen: () => Swal.showLoading(),
-      allowOutsideClick: false,
-    });
+    Swal.fire({ title: "Submitting your request...", didOpen: () => Swal.showLoading(), allowOutsideClick: false });
 
     await db.ref("join_requests").push({
       email: joinEmail,
       message: joinMessage,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
 
     await emailjs.send("service_f4zsz1r", "template_re3enfm", {
       to_name: joinEmail,
-      to_email: joinEmail,
+      to_email: joinEmail
     });
 
-    Swal.fire({
-      icon: "success",
-      title: "Request Sent!",
-      text: "Your request was submitted and a confirmation email has been sent.",
-    });
-
+    Swal.fire({ icon: "success", title: "Request Sent!", text: "Confirmation email sent." });
     joinPopup.style.display = "none";
     document.getElementById("joinForm").reset();
   } catch (error) {
-    console.error("Error:", error);
-    Swal.fire({
-      icon: "error",
-      title: "Submission Failed",
-      text: "There was an error submitting your request or sending confirmation.",
-    });
+    console.error(error);
+    Swal.fire({ icon: "error", title: "Submission Failed", text: "Error submitting your request." });
   }
 });
-
