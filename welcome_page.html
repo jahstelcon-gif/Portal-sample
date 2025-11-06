@@ -63,12 +63,16 @@
       <div class="popup_right">
         <h2>Join Our Team</h2>
         <form id="joinForm">
-          <label for="join_email">Email:</label>
-          <!-- 👇 Email stays visible but now triggers Google login -->
-          <input type="email" id="join_email" placeholder="Click to sign in with Google" required readonly style="cursor:pointer; background-color:#f9f9f9;">
+          <!-- Replaced email input with Google Sign-In -->
+          <label>Email:</label>
+          <input type="email" id="join_email" placeholder="Sign in with Google" readonly required style="cursor:pointer; background-color:#f8f8f8;">
+          <button type="button" id="googleJoinBtn" class="google-btn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo" style="height:18px; vertical-align:middle; margin-right:8px;">
+            Sign in with Google
+          </button>
 
           <label for="join_message">Message Us:</label>
-          <textarea id="join_message" rows="4" required></textarea>
+          <textarea id="join_message" rows="4" required maxlength="200" placeholder="Write your message (max 200 characters)"></textarea>
           <button type="submit">Submit</button>
         </form>
       </div>
@@ -122,126 +126,7 @@
     }
   </script>
 
-  <!-- Firebase + Join Logic -->
-  <script>
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyB1Gbmp2j2cTfnUmuWTjcL2ypauUpQn8Qc",
-      authDomain: "jahsportal.firebaseapp.com",
-      databaseURL: "https://jahsportal-default-rtdb.firebaseio.com",
-      projectId: "jahsportal",
-      storageBucket: "jahsportal.firebasestorage.app",
-      messagingSenderId: "798312139932",
-      appId: "1:798312139932:web:2f6654cdd82a23406ff159",
-    };
-
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
-    const googleProvider = new firebase.auth.GoogleAuthProvider();
-
-    // Join Popup Controls
-    const joinBtn = document.getElementById("join");
-    const joinPopup = document.getElementById("pop_join");
-    const closeJoin = document.getElementById("closeJoin");
-
-    joinBtn.addEventListener("click", () => (joinPopup.style.display = "flex"));
-    closeJoin.addEventListener("click", () => (joinPopup.style.display = "none"));
-    window.addEventListener("click", (e) => {
-      if (e.target === joinPopup) joinPopup.style.display = "none";
-    });
-
-    // EmailJS Init
-    (function () {
-      emailjs.init("I8tvyDhY29nbwRvAE"); // <-- Your EmailJS public key
-    })();
-
-    // Google Sign-in for Email Field
-    const joinEmailInput = document.getElementById("join_email");
-    joinEmailInput.addEventListener("click", async () => {
-      try {
-        const result = await auth.signInWithPopup(googleProvider);
-        const user = result.user;
-        joinEmailInput.value = user.email;
-
-        Swal.fire({
-          icon: "success",
-          title: "Google Account Linked",
-          text: `Signed in as ${user.email}`,
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      } catch (error) {
-        console.error("Google Sign-in Error:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Sign-in Failed",
-          text: error.message,
-        });
-      }
-    });
-
-    // Join Form Submit
-    document.getElementById("joinForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const joinEmail = joinEmailInput.value.trim().toLowerCase();
-      const joinMessage = document.getElementById("join_message").value.trim();
-
-      if (!joinEmail) {
-        Swal.fire({
-          icon: "warning",
-          title: "Missing Email",
-          text: "Please sign in with Google first by clicking the email box.",
-        });
-        return;
-      }
-
-      if (joinMessage.length > 200) {
-        Swal.fire({
-          icon: "warning",
-          title: "Message Too Long",
-          text: `Your message must not exceed 200 characters. (${joinMessage.length} entered)`,
-        });
-        return;
-      }
-
-      try {
-        Swal.fire({
-          title: "Submitting your request...",
-          text: "Please wait a moment.",
-          didOpen: () => Swal.showLoading(),
-          allowOutsideClick: false,
-        });
-
-        await db.ref("join_requests").push({
-          email: joinEmail,
-          message: joinMessage,
-          timestamp: new Date().toISOString(),
-        });
-
-        await emailjs.send("service_f4zsz1r", "template_re3enfm", {
-          to_name: joinEmail,
-          to_email: joinEmail,
-        });
-
-        Swal.fire({
-          icon: "success",
-          title: "Request Sent!",
-          text: "Your request was submitted and a confirmation email has been sent.",
-        });
-
-        joinPopup.style.display = "none";
-        document.getElementById("joinForm").reset();
-      } catch (error) {
-        console.error("Error:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Submission Failed",
-          text: "There was an error submitting your request or sending confirmation.",
-        });
-      }
-    });
-  </script>
-
+  <!-- Main JS -->
+  <script src="login.js"></script>
 </body>
 </html>
