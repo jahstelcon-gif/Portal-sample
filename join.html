@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join Our Team | JAHS Telecon</title>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(120deg, #0c3c74, #1c5bbf);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .join-box {
+      background: rgba(255,255,255,0.1);
+      padding: 30px;
+      border-radius: 15px;
+      width: 400px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover { background-color: #0056b3; }
+  </style>
+</head>
+<body>
+  <div class="join-box">
+    <h2>Join Our Team</h2>
+    <form id="joinForm">
+      <label>Email:</label>
+      <input type="email" id="join_email" placeholder="Click to sign in with Google" required readonly style="cursor:pointer; background-color:#f9f9f9;" />
+      
+      <label>Message:</label>
+      <textarea id="join_message" rows="4" placeholder="Tell us something about you..." required></textarea>
+      
+      <button type="submit">Submit Request</button>
+    </form>
+  </div>
+
+  <script>
+    // =======================
+    // FIREBASE CONFIG
+    // =======================
+    const firebaseConfig = {
+      apiKey: "AIzaSyB1Gbmp2j2cTfnUmuWTjcL2ypauUpQn8Qc",
+      authDomain: "jahsportal.firebaseapp.com",
+      databaseURL: "https://jahsportal-default-rtdb.firebaseio.com",
+      projectId: "jahsportal",
+      storageBucket: "jahsportal.firebasestorage.app",
+      messagingSenderId: "798312139932",
+      appId: "1:798312139932:web:2f6654cdd82a23406ff159",
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+    const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+    // =======================
+    // EMAILJS INIT
+    // =======================
+    (function() {
+      emailjs.init("I8tvyDhY29nbwRvAE");
+    })();
+
+    // =======================
+    // GOOGLE SIGN-IN
+    // =======================
+    const joinEmail = document.getElementById("join_email");
+    joinEmail.addEventListener("click", async () => {
+      try {
+        const result = await auth.signInWithPopup(googleProvider);
+        joinEmail.value = result.user.email;
+        Swal.fire("Google Linked", `Signed in as ${result.user.email}`, "success");
+      } catch (err) {
+        Swal.fire("Sign-in Failed", err.message, "error");
+      }
+    });
+
+    // =======================
+    // JOIN FORM SUBMIT
+    // =======================
+    document.getElementById("joinForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = joinEmail.value.trim();
+      const message = document.getElementById("join_message").value.trim();
+
+      if (!email) {
+        Swal.fire("Missing Email", "Click the email box to sign in with Google first.", "warning");
+        return;
+      }
+
+      if (message.length > 200) {
+        Swal.fire("Too Long", "Message cannot exceed 200 characters.", "warning");
+        return;
+      }
+
+      try {
+        Swal.fire({ title: "Submitting...", didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+
+        await db.ref("join_requests").push({
+          email,
+          message,
+          timestamp: new Date().toISOString(),
+        });
+
+        await emailjs.send("service_f4zsz1r", "template_re3enfm", {
+          to_email: email,
+        });
+
+        Swal.fire("Request Sent!", "We'll review your application shortly.", "success");
+        document.getElementById("joinForm").reset();
+      } catch (error) {
+        console.error(error);
+        Swal.fire("Error", "Something went wrong. Please try again.", "error");
+      }
+    });
+  </script>
+</body>
+</html>
