@@ -79,6 +79,22 @@
     </div>
   </div>
 
+  <!-- Login Popup -->
+  <div id="pop_login" class="popup_overlay">
+    <div class="login_box">
+      <span class="close" style="color: white;">&times;</span>
+      <h2>Login</h2>
+      <form id="universalLoginForm">
+        <input type="email" id="login_email_popup" placeholder="Email" required><br><br>
+        <div style="position:relative;">
+          <input type="password" id="login_password_popup" placeholder="Password" required>
+          <span class="toggle-password" onclick="togglePasswordPopup()">👁</span>
+        </div><br>
+        <button type="submit">Sign In</button>
+      </form>
+    </div>
+  </div>
+
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -114,4 +130,3 @@
   <script src="login.js"></script>
 </body>
 </html>
-
