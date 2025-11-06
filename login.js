@@ -140,32 +140,31 @@ window.addEventListener("click", (e) => {
 })();
 
 // =======================
-// JOIN OUR TEAM FORM (max 200 words)
+// JOIN OUR TEAM FORM (max 200 characters + Gmail-only validation)
 // =======================
 document.getElementById("joinForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
-  const joinEmail = document.getElementById("join_email").value.trim();
+  const joinEmail = document.getElementById("join_email").value.trim().toLowerCase();
   const joinMessage = document.getElementById("join_message").value.trim();
 
-  // ✅ Word count limit — MAXIMUM 200 words
-  const wordCount = joinMessage.split(/\s+/).filter(Boolean).length;
-  if (wordCount > 200) {
+  // ✅ Character limit — MAXIMUM 200 characters
+  if (joinMessage.length > 200) {
     Swal.fire({
       icon: "warning",
       title: "Message Too Long",
-      text: `Your message must not exceed 200 words. (Currently ${wordCount} words)`,
+      text: `Your message must not exceed 200 characters. (Currently ${joinMessage.length} characters)`,
     });
     return;
   }
 
-  // ✅ Validate email format
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailPattern.test(joinEmail)) {
+  // ✅ Gmail-only validation
+  const gmailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+  if (!gmailPattern.test(joinEmail)) {
     Swal.fire({
       icon: "error",
       title: "Invalid Email",
-      text: "Please enter a valid email address.",
+      text: "Please enter a valid Gmail address (e.g., example@gmail.com).",
     });
     return;
   }
@@ -178,12 +177,14 @@ document.getElementById("joinForm").addEventListener("submit", async function (e
       allowOutsideClick: false,
     });
 
+    // ✅ Save to Firebase
     await db.ref("join_requests").push({
       email: joinEmail,
       message: joinMessage,
       timestamp: new Date().toISOString(),
     });
 
+    // ✅ Send confirmation email using EmailJS
     await emailjs.send("service_f4zsz1r", "template_re3enfm", {
       to_name: joinEmail,
       to_email: joinEmail,
