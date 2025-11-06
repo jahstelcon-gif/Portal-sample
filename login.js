@@ -30,83 +30,11 @@ window.addEventListener("click", (e) => {
 });
 
 // =======================
-// LOGIN FUNCTION
+// EMAILJS CONFIG
 // =======================
-const loginForm = document.getElementById("universalLoginForm");
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const email = document.getElementById("login_email").value.trim();
-  const password = document.getElementById("login_password").value;
-
-  if (!email || !password) {
-    Swal.fire({
-      icon: "warning",
-      title: "Missing Input",
-      text: "Please enter both email and password.",
-    });
-    return;
-  }
-
-  try {
-    Swal.fire({
-      title: "Logging in...",
-      text: "Please wait while we verify your credentials.",
-      didOpen: () => Swal.showLoading(),
-      allowOutsideClick: false,
-    });
-
-    const snap = await db
-      .ref("accounts")
-      .orderByChild("email")
-      .equalTo(email)
-      .once("value");
-
-    if (!snap.exists()) {
-      Swal.fire({
-        icon: "error",
-        title: "Login Failed",
-        text: "Invalid email or password.",
-      });
-      return;
-    }
-
-    let acc = null;
-    snap.forEach((child) => (acc = child.val()));
-
-    if (!acc || acc.password !== password) {
-      Swal.fire({
-        icon: "error",
-        title: "Login Failed",
-        text: "Invalid email or password.",
-      });
-      return;
-    }
-
-    localStorage.setItem("email", acc.email);
-    localStorage.setItem("role", acc.role);
-    localStorage.setItem("userName", acc.name);
-
-    Swal.fire({
-      title: `Welcome, ${acc.name}!`,
-      text: "You have successfully logged in.",
-      icon: "success",
-      timer: 2500,
-      timerProgressBar: true,
-    }).then(() => {
-      if (acc.role === "admin") window.location.href = "admin_dashboard.html";
-      else if (acc.role === "teamleader") window.location.href = "team_dashboard.html";
-      else if (acc.role === "employee") window.location.href = "employee_dashboard.html";
-    });
-  } catch (err) {
-    console.error(err);
-    Swal.fire({
-      icon: "error",
-      title: "Database Error",
-      text: "Something went wrong. Please try again.",
-    });
-  }
-});
+(function () {
+  emailjs.init("I8tvyDhY29nbwRvAE");
+})();
 
 // =======================
 // JOIN POPUP CONTROLS
@@ -122,22 +50,17 @@ window.addEventListener("click", (e) => {
 });
 
 // =======================
-// ✅ EMAILJS CONFIG
-// =======================
-(function () {
-  emailjs.init("I8tvyDhY29nbwRvAE"); // <-- Your EmailJS Public Key
-})();
-
-// =======================
-// ✅ GOOGLE SIGN-IN FOR JOIN FORM
+// GOOGLE SIGN-IN FOR JOIN FORM
 // =======================
 const googleJoinBtn = document.getElementById("googleJoinBtn");
+const joinEmailInput = document.getElementById("join_email");
+
 if (googleJoinBtn) {
   googleJoinBtn.addEventListener("click", async () => {
     try {
       const result = await auth.signInWithPopup(googleProvider);
       const user = result.user;
-      document.getElementById("join_email").value = user.email;
+      joinEmailInput.value = user.email;
 
       Swal.fire({
         icon: "success",
@@ -158,12 +81,12 @@ if (googleJoinBtn) {
 }
 
 // =======================
-// JOIN OUR TEAM FORM
+// JOIN FORM SUBMIT
 // =======================
 document.getElementById("joinForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
-  const joinEmail = document.getElementById("join_email").value.trim().toLowerCase();
+  const joinEmail = joinEmailInput.value.trim().toLowerCase();
   const joinMessage = document.getElementById("join_message").value.trim();
 
   if (!joinEmail) {
