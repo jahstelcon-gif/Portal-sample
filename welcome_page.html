@@ -4,19 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JAHS Telecon Portal</title>
-  
+
+  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- EmailJS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
- <link rel="stylesheet" href="welcome_page.css">
-    
+  <link rel="stylesheet" href="welcome_page.css">
 </head>
 <body>
-
-  <!-- Navigation -->
-  <nav>
-    <button id="login">Login</button>
-  </nav>
 
   <!-- Slider -->
   <div class="slider-container">
@@ -26,10 +23,11 @@
       <img src="bg3.png" alt="Slide 3">
       <img src="bg4.png" alt="Slide 4">
     </div>
+
     <div class="right-card">
-      <img src="logowebb.png" style="height: 130px; ">
+      <img src="logowebb.png" style="height: 130px;">
       <h1>Login</h1>
-      <form id="universalLoginForm">
+      <form id="loginForm">
         <div class="input-group">
           <input type="email" id="login_email" placeholder=" " required>
           <label for="login_email">Email</label>
@@ -37,24 +35,22 @@
         <div class="input-group">
           <input type="password" id="login_password" placeholder=" " required>
           <label for="login_password">Password</label>
-          <span class="toggle-password" onclick="togglePassword()" style="color: white;">👁</span>
+          <span class="toggle-password" onclick="togglePassword('login_password')" style="color: white;">👁</span>
         </div>
         <button type="submit">Sign In</button>
       </form>
-      <img src="qrcode.png  " style="height: 330px; ">
+      <img src="qrcode.png" style="height: 330px;">
     </div>
-    <button class="center-button" id="join">Join our Team!</button>
+
+    <button class="center-button" id="joinBtn">Join our Team!</button>
   </div>
-
-  <!-- Footer -->
-
 
   <!-- Join Popup -->
   <div class="popup_overlay" id="pop_join">
     <div class="popup_box">
       <span class="close" id="closeJoin">&times;</span>
       <div class="popup_left">
-        <iframe 
+        <iframe
           src="https://www.google.com/maps?q=14.8070035,120.8683621&hl=es;z=14&output=embed"
           allowfullscreen>
         </iframe>
@@ -64,27 +60,12 @@
         <form id="joinForm">
           <label for="join_email">Email:</label>
           <input type="email" id="join_email" required>
+
           <label for="join_message">Message Us:</label>
           <textarea id="join_message" rows="4" required></textarea>
           <button type="submit">Submit</button>
         </form>
       </div>
-    </div>
-  </div>
-
-  <!-- Login Popup -->
-  <div id="pop_login" class="popup_overlay">
-    <div class="login_box">
-      <span class="close" style="color: white;">&times;</span>
-      <h2>Login</h2>
-      <form id="universalLoginForm">
-        <input type="email" id="login_email_popup" placeholder="Email" required><br><br>
-        <div style="position:relative;">
-          <input type="password" id="login_password_popup" placeholder="Password" required>
-          <span class="toggle-password" onclick="togglePasswordPopup()">👁</span>
-        </div><br>
-        <button type="submit">Sign In</button>
-      </form>
     </div>
   </div>
 
@@ -108,12 +89,8 @@
     }
     showNextSlide(6000);
 
-    function togglePassword() {
-      const pass = document.getElementById("login_password");
-      pass.type = pass.type === "password" ? "text" : "password";
-    }
-    function togglePasswordPopup() {
-      const pass = document.getElementById("login_password_popup");
+    function togglePassword(inputId) {
+      const pass = document.getElementById(inputId);
       pass.type = pass.type === "password" ? "text" : "password";
     }
   </script>
