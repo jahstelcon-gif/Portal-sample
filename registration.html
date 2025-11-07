@@ -80,7 +80,7 @@
         to_name: toName
       })
       .then(() => {
-        document.getElementById("msg").innerHTML = `<p class="success">✅ We send you an Email to berify it's you ${toEmail}</p>`;
+        document.getElementById("msg").innerHTML = `<p class="success">✅ We send you an Email to verify it's you ${toEmail}</p>`;
       })
       .catch((error) => {
         console.error("EmailJS error:", error);
@@ -142,7 +142,7 @@
                   role: "employee"
                 })
                 .then(() => {
-                  msg.innerHTML = `<p class="success">✅ Account registered successfully as ${accNum}!</p>`;
+                  msg.innerHTML = `<p class="success">✅ Verificantion sent successfully ${accNum}!</p>`;
                   sendCongratsEmail(user.email, user.displayName);
                 })
                 .catch((e) => {
@@ -160,4 +160,5 @@
   </script>
 </body>
 </html>
+
 
