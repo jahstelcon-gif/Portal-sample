@@ -265,7 +265,6 @@
         const rows = Object.values(data).map(req => `
           <tr>
             <td class="nowrap">${req.email || "-"}</td>
-            <td class="nowrap">${req.contact_number || "-"}</td>
             <td>${req.message || "-"}</td>
             <td class="nowrap">${formatDate(req.timestamp)}</td>
           </tr>`).join("");
@@ -330,4 +329,5 @@
   </script>
 </body>
 </html>
+
 
