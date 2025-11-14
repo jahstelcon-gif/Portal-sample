@@ -49,8 +49,9 @@
 <body>
 
   <div class="container">
+    <h2>Welcome to JAHS Telecon!</h2>
     <h2>Sign in your gmail account for verification</h2>
-    <button id="googleSignInBtn">Click Here to Verify it's you</button>
+    <button id="googleSignInBtn">Click Here to Create Account</button>
     <div id="user-info"></div>
     <div id="msg"></div>
   </div>
@@ -81,11 +82,11 @@
         to_name: toName
       })
       .then(() => {
-        document.getElementById("msg").innerHTML = `<p class="success">✅ We send you an Email to verify it's you ${toEmail}</p>`;
+        document.getElementById("msg").innerHTML = `<p class="success"> We send you an Email to verify it's you ${toEmail}</p>`;
       })
       .catch((error) => {
         console.error("EmailJS error:", error);
-        document.getElementById("msg").innerHTML = `<p class="error">❌ Failed to send email: ${error.text}</p>`;
+        document.getElementById("msg").innerHTML = `<p class="error"> Failed to send email: ${error.text}</p>`;
       });
     }
 
@@ -143,7 +144,7 @@
                   role: "employee"
                 })
                 .then(() => {
-                  msg.innerHTML = `<p class="success">✅ Verificantion sent successfully ${accNum}!</p>`;
+                  msg.innerHTML = `<p class="success"> Verificantion sent successfully ${accNum}!</p>`;
                   sendCongratsEmail(user.email, user.displayName);
                 })
                 .catch((e) => {
@@ -161,6 +162,7 @@
   </script>
 </body>
 </html>
+
 
 
 
