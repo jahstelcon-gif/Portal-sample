@@ -518,14 +518,14 @@ function renderEmployeeSalary(db, employeeName) {
     // ✅ Update salary display (replace old with new)
     if (latestRecord) {
       const totalSalary = Number(latestRecord.totalSalary) || 0;
-      salaryAmount.innerText = `₱ ${totalSalary.toLocaleString().00}`;
+      salaryAmount.innerText = `₱ ${totalSalary.toLocaleString()}`;
     } else {
-      salaryAmount.innerText = "₱ 0.00";
+      salaryAmount.innerText = "₱ 0";
     }
   }, 
   (err) => {
     console.error("Error loading salary data:", err);
-    salaryAmount.innerText = "₱ 0.00";
+    salaryAmount.innerText = "₱ 0";
   });
 }
 </script>
@@ -595,4 +595,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
