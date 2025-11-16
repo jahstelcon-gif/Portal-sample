@@ -455,7 +455,7 @@ function updateUserName(newName) {
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-const salaryAmount = document.getElementById("salaryAmount");
+const  = document.getElementById("salaryAmount");
 
 document.addEventListener("DOMContentLoaded", () => {
   // Firebase configuration
@@ -518,14 +518,14 @@ function renderEmployeeSalary(db, employeeName) {
     // ✅ Update salary display (replace old with new)
     if (latestRecord) {
       const totalSalary = Number(latestRecord.totalSalary) || 0;
-      salaryAmount.innerText = `₱ ${totalSalary.toLocaleString()}`;
+      salaryAmount.innerText = `₱ ${totalSalary.toLocaleString().00}`;
     } else {
-      salaryAmount.innerText = "₱ 0";
+      salaryAmount.innerText = "₱ 0.00";
     }
   }, 
   (err) => {
     console.error("Error loading salary data:", err);
-    salaryAmount.innerText = "₱ 0";
+    salaryAmount.innerText = "₱ 0.00";
   });
 }
 </script>
@@ -595,3 +595,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
