@@ -494,14 +494,12 @@ function renderTeamLeaderSalary(db, teamLeaderName) {
 
     snapshot.forEach(child => {
       const rec = child.val();
-      if (!rec || !rec.name || rec.role !== "Team Leader") return; // ✅ Only include Team Leader records
+      if (!rec || !rec.name || rec.role !== "Team Leader") return;
 
-      // ✅ Match only the current logged-in team leader
       if (rec.name.toLowerCase() !== teamLeaderName.toLowerCase()) return;
 
       const empKey = (rec.name + "|" + (rec.role || "")).toLowerCase();
 
-      // Keep only the latest record
       if (
         !latestRecordPerEmployee[empKey] ||
         new Date(rec.postedAt) > new Date(latestRecordPerEmployee[empKey].postedAt)
@@ -512,16 +510,24 @@ function renderTeamLeaderSalary(db, teamLeaderName) {
 
     const uniqueRecords = Object.values(latestRecordPerEmployee);
 
-    // Compute total salary
+    // 🔥 Compute total salary properly
     totalTeamSalary = uniqueRecords.reduce(
       (sum, rec) => sum + (Number(rec.totalSalary) || 0),
       0
     );
 
-    // ✅ Update displayed total
-    salaryAmount.innerText = `₱ ${totalTeamSalary.toLocaleString()}`;
+    // 🔥 Format to "1,234.00"
+    const formatMoney = (num) => {
+      return Number(num).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    };
 
-    // ✅ Render table rows (if a table exists)
+    // 🔥 Update total displayed salary with .00
+    salaryAmount.innerText = `₱ ${formatMoney(totalTeamSalary)}`;
+
+    // 🔥 If your table exists, render it
     if (salaryTableBody) {
       salaryTableBody.innerHTML = "";
       uniqueRecords.forEach(rec => {
@@ -530,16 +536,17 @@ function renderTeamLeaderSalary(db, teamLeaderName) {
             <td>${rec.name}</td>
             <td>${rec.role}</td>
             <td>${rec.startDate} - ${rec.endDate}</td>
-            <td>₱ ${Number(rec.totalSalary).toLocaleString()}</td>
+            <td>₱ ${formatMoney(rec.totalSalary)}</td>
           </tr>`;
         salaryTableBody.innerHTML += row;
       });
     }
   }, err => {
     console.error("Error loading salary data:", err);
-    salaryAmount.innerText = "₱ 0";
+    salaryAmount.innerText = "₱ 0.00"; // 🔥 formatted default
   });
 }
+
 </script>
 
 
