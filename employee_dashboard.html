@@ -493,41 +493,53 @@ document.addEventListener("DOMContentLoaded", () => {
 function renderEmployeeSalary(db, employeeName) {
   const salaryRef = db.ref("posted_salary_record");
 
-  salaryRef.on("value", (snapshot) => {
-    let latestRecord = null;
+  salaryRef.on(
+    "value",
+    (snapshot) => {
+      let latestRecord = null;
 
-    snapshot.forEach((child) => {
-      const rec = child.val();
-      if (!rec || !rec.name || !rec.role) return;
+      snapshot.forEach((child) => {
+        const rec = child.val();
+        if (!rec || !rec.name || !rec.role) return;
 
-      const recName = (rec.name || "").trim().toLowerCase();
-      const recRole = (rec.role || "").trim().toLowerCase();
+        const recName = (rec.name || "").trim().toLowerCase();
+        const recRole = (rec.role || "").trim().toLowerCase();
 
-      // ✅ Only consider logged-in employee
-      if (recRole !== "employee" || recName !== employeeName) return;
+        // ✅ Only consider logged-in employee
+        if (recRole !== "employee" || recName !== employeeName) return;
 
-      // ✅ Keep only the newest record by postedAt
-      if (
-        !latestRecord ||
-        new Date(rec.postedAt) > new Date(latestRecord.postedAt)
-      ) {
-        latestRecord = rec;
+        // ✅ Keep only the newest record
+        if (
+          !latestRecord ||
+          new Date(rec.postedAt) > new Date(latestRecord.postedAt)
+        ) {
+          latestRecord = rec;
+        }
+      });
+
+      // 🔥 Money formatter (always two decimals)
+      const formatMoney = (num) => {
+        return Number(num).toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      };
+
+      // 🔥 Update salary display
+      if (latestRecord) {
+        const totalSalary = Number(latestRecord.totalSalary) || 0;
+        salaryAmount.innerText = `₱ ${formatMoney(totalSalary)}`;
+      } else {
+        salaryAmount.innerText = "₱ 0.00";
       }
-    });
-
-    // ✅ Update salary display (replace old with new)
-    if (latestRecord) {
-      const totalSalary = Number(latestRecord.totalSalary) || 0;
-      salaryAmount.innerText = `₱ ${totalSalary.toLocaleString()}`;
-    } else {
-      salaryAmount.innerText = "₱ 0";
+    },
+    (err) => {
+      console.error("Error loading salary data:", err);
+      salaryAmount.innerText = "₱ 0.00";
     }
-  }, 
-  (err) => {
-    console.error("Error loading salary data:", err);
-    salaryAmount.innerText = "₱ 0";
-  });
+  );
 }
+
 </script>
 
 
